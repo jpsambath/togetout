@@ -4,7 +4,9 @@
 namespace App\DBAL\Types;
 
 
-class EtatEnum extends AbstractEnumType
+use Fresh\DoctrineEnumBundle\DBAL\Types\AbstractEnumType;
+
+final class EtatEnumType extends AbstractEnumType
 {
     public const CREE = 'Créée';
     public const OUVERTE = 'Ouverte';

@@ -54,9 +54,30 @@ class Sortie
     private $infosSortie;
 
     /**
-     * @ORM\Column(type="integer")*
+     * @ORM\ManyToOne(targetEntity="App\Entity\Etat")
      */
     private $etat;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Participant", inversedBy="sortieCreer")
+     */
+    private $organisateur;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Participant")
+     */
+    private $inscrit;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
+     */
+    private $lieu;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
+     */
+    private $site;
+
 
     public function getId(): ?int
     {
@@ -135,15 +156,86 @@ class Sortie
         return $this;
     }
 
-    public function getEtat(): ?int
+    /**
+     * @return mixed
+     */
+    public function getEtat()
     {
         return $this->etat;
     }
 
-    public function setEtat(int $etat): self
+    /**
+     * @param mixed $etat
+     */
+    public function setEtat($etat): void
     {
         $this->etat = $etat;
-
-        return $this;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getOrganisateur()
+    {
+        return $this->organisateur;
+    }
+
+    /**
+     * @param mixed $organisateur
+     */
+    public function setOrganisateur($organisateur): void
+    {
+        $this->organisateur = $organisateur;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getInscrit()
+    {
+        return $this->inscrit;
+    }
+
+    /**
+     * @param mixed $inscrit
+     */
+    public function setInscrit($inscrit): void
+    {
+        $this->inscrit = $inscrit;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLieu()
+    {
+        return $this->lieu;
+    }
+
+    /**
+     * @param mixed $lieu
+     */
+    public function setLieu($lieu): void
+    {
+        $this->lieu = $lieu;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSite()
+    {
+        return $this->site;
+    }
+
+    /**
+     * @param mixed $site
+     */
+    public function setSite($site): void
+    {
+        $this->site = $site;
+    }
+
+
+
 }

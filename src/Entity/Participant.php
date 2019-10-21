@@ -71,6 +71,33 @@ class Participant implements UserInterface
      */
     private $telephone;
 
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $administrateur;
+
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $actif;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie")
+     */
+    private $sortie;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
+     */
+    private $sortieCreer;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Site")
+     */
+    private $site;
+
 
     public function getId(): ?int
     {
@@ -161,6 +188,38 @@ class Participant implements UserInterface
         $this->telephone = $telephone;
     }
 
+    /**
+     * @return bool
+     */
+    public function isAdministrateur(): bool
+    {
+        return $this->administrateur;
+    }
+
+    /**
+     * @param bool $administrateur
+     */
+    public function setAdministrateur(bool $administrateur): void
+    {
+        $this->administrateur = $administrateur;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActif(): bool
+    {
+        return $this->actif;
+    }
+
+    /**
+     * @param bool $actif
+     */
+    public function setActif(bool $actif): void
+    {
+        $this->actif = $actif;
+    }
+
 
     /**
      * @see UserInterface
@@ -191,6 +250,56 @@ class Participant implements UserInterface
     public function setEmail(string $email): void
     {
         $this->email = $email;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSortie()
+    {
+        return $this->sortie;
+    }
+
+    /**
+     * @param mixed $sortie
+     */
+    public function setSortie($sortie): void
+    {
+        $this->sortie = $sortie;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSortieCreer()
+    {
+        return $this->sortieCreer;
+    }
+
+    /**
+     * @param mixed $sortieCreer
+     */
+    public function setSortieCreer($sortieCreer): void
+    {
+        $this->sortieCreer = $sortieCreer;
+    }
+
+
+
+    /**
+     * @return mixed
+     */
+    public function getSite()
+    {
+        return $this->site;
+    }
+
+    /**
+     * @param mixed $site
+     */
+    public function setSite($site): void
+    {
+        $this->site = $site;
     }
 
 

@@ -2,9 +2,8 @@
 
 namespace App\Entity;
 
-use App\DBAL\Types\EtatEnum;
+use App\DBAL\Types\EtatEnumType;
 use Fresh\DoctrineEnumBundle\Validator\Constraints as DoctrineAssert;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -20,8 +19,9 @@ class Etat
     private $id;
 
     /**
-     * @ORM\Column(type="EtatEnum", nullable="false")
-     * @DoctrineAssert\Enum(entity="EtatEnum")
+     * @var EtatEnum
+     * @ORM\Column(type="EtatEnumType", nullable=false)
+     * @DoctrineAssert\Enum(entity="App\DBAL\Types\EtatEnumType")
     */
     private $libelle;
 
@@ -30,15 +30,22 @@ class Etat
         return $this->id;
     }
 
-    public function getLibelle(): ?string
+    /**
+     * @return mixed
+     */
+    public function getLibelle(): ?EtatEnumType
     {
         return $this->libelle;
     }
 
-    public function setLibelle(string $libelle): self
+    /**
+     * @param mixed $libelle
+     * @return Etat|null
+     */
+    public function setLibelle(EtatEnumType $libelle): ?self
     {
         $this->libelle = $libelle;
-
-        return $this;
     }
+
+
 }

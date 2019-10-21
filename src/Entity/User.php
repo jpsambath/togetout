@@ -11,9 +11,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity(fields={"username"}, message="There is already an account with this username")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
- * @UniqueEntity(fields={"phone"}, message="There is already an account with this phone")
+ * @UniqueEntity(fields={"telephone"}, message="There is already an account with this phone")
  */
-class User implements UserInterface
+class Participant implements UserInterface
 {
     /**
      * @ORM\Id()
@@ -28,7 +28,7 @@ class User implements UserInterface
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
      */
-    private $firstName;
+    private $nom;
 
 
     /**
@@ -37,7 +37,7 @@ class User implements UserInterface
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
      */
-    private $lastName;
+    private $prenom;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
@@ -69,7 +69,7 @@ class User implements UserInterface
      * @var string
      * @ORM\Column(type="integer", length=15, unique=true)
      */
-    private $phone;
+    private $telephone;
 
 
     public function getId(): ?int
@@ -116,49 +116,49 @@ class User implements UserInterface
     /**
      * @return string
      */
-    public function getFirstName(): string
+    public function getNom(): string
     {
-        return $this->firstName;
+        return $this->nom;
     }
 
     /**
-     * @param string $firstName
+     * @param string $nom
      */
-    public function setFirstName(string $firstName): void
+    public function setNom(string $nom): void
     {
-        $this->firstName = $firstName;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLastName(): string
-    {
-        return $this->lastName;
-    }
-
-    /**
-     * @param string $lastName
-     */
-    public function setLastName(string $lastName): void
-    {
-        $this->lastName = $lastName;
+        $this->nom = $nom;
     }
 
     /**
      * @return string
      */
-    public function getPhone(): string
+    public function getPrenom(): string
     {
-        return $this->phone;
+        return $this->prenom;
     }
 
     /**
-     * @param string $phone
+     * @param string $prenom
      */
-    public function setPhone(string $phone): void
+    public function setPrenom(string $prenom): void
     {
-        $this->phone = $phone;
+        $this->prenom = $prenom;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTelephone(): string
+    {
+        return $this->telephone;
+    }
+
+    /**
+     * @param string $telephone
+     */
+    public function setTelephone(string $telephone): void
+    {
+        $this->telephone = $telephone;
     }
 
 

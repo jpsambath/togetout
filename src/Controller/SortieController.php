@@ -16,4 +16,5 @@ class SortieController extends Controller
             'controller_name' => 'SortieController',
         ]);
     }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Participant;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -12,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class ParticipantController
  * @package App\Controller
- * @Route("/Participant", name="participant_")
+ * @Route("/participant", name="participant_")
  */
 class ParticipantController extends Controller
 {
@@ -35,15 +36,31 @@ class ParticipantController extends Controller
      */
     public function modifierProfil(Request $request, ObjectManager $om){
         if ($request->isXmlHttpRequest()){
-            $participantActuel = json_decode($request->get("variable"));
-            $om->persist($participantActuel);
+            $nouveauParticipant = json_decode($request->get("nouveauParticipant"));
+            $om->persist($nouveauParticipant);
             $om->flush();
 
             //$this->addFlash('success', "Votre profil a bien été modifié !");
 
-            return $this->json($participantActuel);
+            return $this->json($nouveauParticipant);
         }
 
         throw new \ErrorException("Vous ne pouvez pas accéder à cette page !");
+    }
+
+    /**
+     * @return JsonResponse
+     * @Route("/test", name="test")
+     */
+    public function test(){
+        $test = new Participant();
+
+        $test->setNom('ROY');
+        $test->setPrenom('Loïc');
+        $test->setEmail('loic.roy2019@campus-eni.fr');
+        $test->setUsername('username');
+        $test->setPassword('123456789/Test');
+
+        return $this->json($test);
     }
 }

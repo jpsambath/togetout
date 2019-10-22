@@ -103,10 +103,11 @@ class Participant implements UserInterface
 
     /**
      * Participant constructor.
-     * @param ArrayCollection $sortie
      */
-    public function __construct(ArrayCollection $sortie)
+    public function __construct()
     {
+        $this->administrateur = false;
+        $this->actif = true;
         $this->sortie = new ArrayCollection();
     }
 
@@ -187,7 +188,7 @@ class Participant implements UserInterface
     /**
      * @return string
      */
-    public function getTelephone(): string
+    public function getTelephone(): ?string
     {
         return $this->telephone;
     }
@@ -206,14 +207,6 @@ class Participant implements UserInterface
     public function isAdministrateur(): bool
     {
         return $this->administrateur;
-    }
-
-    /**
-     * @param bool $administrateur
-     */
-    public function setAdministrateur(bool $administrateur): void
-    {
-        $this->administrateur = $administrateur;
     }
 
     /**

@@ -86,7 +86,7 @@ class Sortie
      * Sortie constructor.
      * @param $inscrit
      */
-    public function __construct($inscrit)
+    public function __construct()
     {
         $this->inscrit = new ArrayCollection();
     }
@@ -216,7 +216,6 @@ class Sortie
     public function setInscrit(ArrayCollection $inscrit): void
     {
         $this->inscrit = $inscrit;
-
     }
 
     /**

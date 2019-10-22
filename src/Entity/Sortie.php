@@ -5,7 +5,9 @@ namespace App\Entity;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use ErrorException;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\DBAL\Types\EtatEnumType;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SortieRepository")
@@ -285,17 +287,43 @@ class Sortie
 
     /**
      * @param Participant $participant
+     * @throws ErrorException
      */
     public function inscrirePArticipant(Participant $participant): void
     {
-        $this->inscrit->add($participant->getId(), $participant->getUsername());
+        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getInscrit()->count() < $this->getNbInscriptionMax())
+        {
+        $this->inscrit->set($participant->getId(), $participant->getUsername());
+        } else
+        {
+            throw new ErrorException('il n\'est plus possible de s\'inscrire !');
+        }
     }
 
     /**
      * @param Participant $participant
+     * @throws ErrorException
      */
     public function desinscrirePArticipant(Participant $participant): void
     {
-        $this->inscrit->remove($participant->getId());
+        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE && $this->getDateLimiteInscription() > (new \DateTime())) )
+        {
+            $this->inscrit->removeElement($participant->getId());
+        } else
+            {
+                throw new ErrorException('il n\'est plus possible de ce désinscrire !');
+            }
     }
+
+    /**
+     * @param Sortie $sortie
+     */
+    public function inscriptionCloturee(Sortie $sortie)
+    {
+            $this->getEtat()->setLibelle() == EtatEnumType::CLOTUREE;
+    }
+
+
+
+
 }

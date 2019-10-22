@@ -26,6 +26,7 @@ class SortieController extends Controller
      */
     public function inscriptionSortie(Sortie $sortie)
     {
+
         $sortie->inscrirePArticipant($this->getUser());
 
     }
@@ -54,6 +55,8 @@ class SortieController extends Controller
             ->findSortieBySite(json_decode($request->get("selectSite")),json_decode($request->get("checkFiltreOrganisateur")),json_decode($request->get("checkFiltreInscrit")),json_decode($request->get("checkFiltrePasInscrit")),json_decode($request->get("checkFiltreSortiePasse")),json_decode($request->get("filtreDateDebut")),json_decode($request->get("filtreDateFin")),json_decode($request->get("filtreSaisieNom")));
         return new JsonResponse(json_encode(['listeSortie' => $listeSortie]));
     }
+
+
 
     /**
      * findSortie(

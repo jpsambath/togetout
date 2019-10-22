@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Sortie;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SortieController extends Controller
@@ -19,7 +20,7 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/inscriptionSortie/{id}", name="inscriptionSortie", requirements={\d})
+     * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
      * @param Sortie $sortie
      * @return void
      */
@@ -30,7 +31,7 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/desistementSortie/{id}", name="desistementSortie", requirements={\d})
+     * @Route("/desistementSortie/{id}", name="desistementSortie")
      * @param Sortie $sortie
      * @return void
      */

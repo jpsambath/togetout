@@ -80,7 +80,6 @@ class Sortie
     private $inscrit;
 
 
-
     /**
      * @var Lieu
      * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
@@ -284,4 +283,19 @@ class Sortie
     }
 
 
+    /**
+     * @param Participant $participant
+     */
+    public function inscrirePArticipant(Participant $participant): void
+    {
+        $this->inscrit->add($participant->getId(), $participant->getUsername());
+    }
+
+    /**
+     * @param Participant $participant
+     */
+    public function desinscrirePArticipant(Participant $participant): void
+    {
+        $this->inscrit->remove($participant->getId());
+    }
 }

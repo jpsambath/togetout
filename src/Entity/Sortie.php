@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -68,15 +69,27 @@ class Sortie
      */
     private $inscrit;
 
+
+
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
      */
     private $lieu;
 
     /**
+     * @var ArrayCollection
      * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
      */
     private $site;
+
+    /**
+     * Sortie constructor.
+     * @param $inscrit
+     */
+    public function __construct($inscrit)
+    {
+        $this->inscrit = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -189,19 +202,21 @@ class Sortie
     }
 
     /**
-     * @return mixed
+     * @return ArrayCollection
      */
-    public function getInscrit()
+    public function getInscrit(): ArrayCollection
     {
         return $this->inscrit;
     }
 
     /**
-     * @param mixed $inscrit
+     * @param ArrayCollection $inscrit
+     * @return Sortie|null
      */
-    public function setInscrit($inscrit): void
+    public function setInscrit(ArrayCollection $inscrit): void
     {
         $this->inscrit = $inscrit;
+
     }
 
     /**

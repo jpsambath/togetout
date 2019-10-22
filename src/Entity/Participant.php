@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -84,9 +85,11 @@ class Participant implements UserInterface
     private $actif;
 
     /**
+     * @var ArrayCollection
      * @ORM\ManyToMany(targetEntity="App\Entity\Sortie")
      */
     private $sortie;
+
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
@@ -97,6 +100,15 @@ class Participant implements UserInterface
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
      */
     private $site;
+
+    /**
+     * Participant constructor.
+     * @param ArrayCollection $sortie
+     */
+    public function __construct(ArrayCollection $sortie)
+    {
+        $this->sortie = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -253,20 +265,21 @@ class Participant implements UserInterface
     }
 
     /**
-     * @return mixed
+     * @return ArrayCollection
      */
-    public function getSortie()
+    public function getSortie(): ArrayCollection
     {
         return $this->sortie;
     }
 
     /**
-     * @param mixed $sortie
+     * @param ArrayCollection $sortie
      */
-    public function setSortie($sortie): void
+    public function setSortie(ArrayCollection $sortie): void
     {
         $this->sortie = $sortie;
     }
+
 
     /**
      * @return mixed

@@ -41,6 +41,7 @@ class Participant implements UserInterface
     private $prenom;
 
     /**
+     * @var string
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
@@ -92,11 +93,13 @@ class Participant implements UserInterface
 
 
     /**
+     * @var Sortie
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
      */
     private $sortieCreer;
 
     /**
+     * @var Site
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
      */
     private $site;
@@ -115,42 +118,6 @@ class Participant implements UserInterface
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
-    public function getUsername(): string
-    {
-        return (string) $this->username;
-    }
-
-    public function setUsername(string $username): self
-    {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
-
-        return $this;
     }
 
     /**
@@ -188,7 +155,71 @@ class Participant implements UserInterface
     /**
      * @return string
      */
-    public function getTelephone(): ?string
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param string $username
+     */
+    public function setUsername(string $username): void
+    {
+        $this->username = $username;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRoles(): array
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param array $roles
+     */
+    public function setRoles(array $roles): void
+    {
+        $this->roles = $roles;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @param string $password
+     */
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     */
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTelephone(): string
     {
         return $this->telephone;
     }
@@ -210,6 +241,14 @@ class Participant implements UserInterface
     }
 
     /**
+     * @param bool $administrateur
+     */
+    public function setAdministrateur(bool $administrateur): void
+    {
+        $this->administrateur = $administrateur;
+    }
+
+    /**
      * @return bool
      */
     public function isActif(): bool
@@ -223,38 +262,6 @@ class Participant implements UserInterface
     public function setActif(bool $actif): void
     {
         $this->actif = $actif;
-    }
-
-
-    /**
-     * @see UserInterface
-     */
-    public function getPassword(): string
-    {
-        return (string) $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    /**
-     * @param string $email
-     */
-    public function setEmail(string $email): void
-    {
-        $this->email = $email;
     }
 
     /**
@@ -273,40 +280,38 @@ class Participant implements UserInterface
         $this->sortie = $sortie;
     }
 
-
     /**
-     * @return mixed
+     * @return Sortie
      */
-    public function getSortieCreer()
+    public function getSortieCreer(): Sortie
     {
         return $this->sortieCreer;
     }
 
     /**
-     * @param mixed $sortieCreer
+     * @param Sortie $sortieCreer
      */
-    public function setSortieCreer($sortieCreer): void
+    public function setSortieCreer(Sortie $sortieCreer): void
     {
         $this->sortieCreer = $sortieCreer;
     }
 
-
-
     /**
-     * @return mixed
+     * @return Site
      */
-    public function getSite()
+    public function getSite(): Site
     {
         return $this->site;
     }
 
     /**
-     * @param mixed $site
+     * @param Site $site
      */
-    public function setSite($site): void
+    public function setSite(Site $site): void
     {
         $this->site = $site;
     }
+
 
 
     /**

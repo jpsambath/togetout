@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,6 +20,7 @@ class Sortie
     private $id;
 
     /**
+     * @var string
      * @ORM\Column(type="string", length=50)
      * @Assert\Length(max="50")
      * @Assert\NotBlank()
@@ -26,45 +28,53 @@ class Sortie
     private $nom;
 
     /**
+     * @var DateTime
      * @ORM\Column(type="datetime")
      * @Assert\NotBlank()
      */
     private $dateHeureDebut;
 
     /**
+     * @var DateTime
      * @ORM\Column(type="datetime")
      * @Assert\NotBlank()
      */
     private $duree;
 
     /**
+     * @var DateTime
      * @ORM\Column(type="datetime")
      * @Assert\NotBlank()
      */
     private $dateLimiteInscription;
 
     /**
+     * @var integer
      * @ORM\Column(type="integer", nullable=true)
      */
     private $nbInscriptionMax;
 
     /**
+     * @var string
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Length(max="255")
      */
     private $infosSortie;
 
     /**
+     * @var Etat
      * @ORM\ManyToOne(targetEntity="App\Entity\Etat")
      */
     private $etat;
 
     /**
+     * @var Participant
      * @ORM\ManyToOne(targetEntity="App\Entity\Participant", inversedBy="sortieCreer")
      */
     private $organisateur;
 
     /**
+     * @var ArrayCollection
      * @ORM\ManyToMany(targetEntity="App\Entity\Participant")
      */
     private $inscrit;
@@ -72,19 +82,19 @@ class Sortie
 
 
     /**
+     * @var Lieu
      * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
      */
     private $lieu;
 
     /**
-     * @var ArrayCollection
-     * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
+     * @var Site
+     * @ORM\ManyToOne(targetEntity="App\Entity\Site")
      */
     private $site;
 
     /**
      * Sortie constructor.
-     * @param $inscrit
      */
     public function __construct()
     {
@@ -97,106 +107,130 @@ class Sortie
         return $this->id;
     }
 
-    public function getNom(): ?string
+    /**
+     * @return string
+     */
+    public function getNom(): string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    /**
+     * @param string $nom
+     */
+    public function setNom(string $nom): void
     {
         $this->nom = $nom;
-
-        return $this;
     }
 
-    public function getDateHeureDebut(): ?\DateTimeInterface
+    /**
+     * @return DateTime
+     */
+    public function getDateHeureDebut(): DateTime
     {
         return $this->dateHeureDebut;
     }
 
-    public function setDateHeureDebut(\DateTimeInterface $dateHeureDebut): self
+    /**
+     * @param DateTime $dateHeureDebut
+     */
+    public function setDateHeureDebut(DateTime $dateHeureDebut): void
     {
         $this->dateHeureDebut = $dateHeureDebut;
-
-        return $this;
     }
 
-    public function getDuree(): ?\DateTimeInterface
+    /**
+     * @return DateTime
+     */
+    public function getDuree(): DateTime
     {
         return $this->duree;
     }
 
-    public function setDuree(\DateTimeInterface $duree): self
+    /**
+     * @param DateTime $duree
+     */
+    public function setDuree(DateTime $duree): void
     {
         $this->duree = $duree;
-
-        return $this;
     }
 
-    public function getDateLimiteInscription(): ?\DateTimeInterface
+    /**
+     * @return DateTime
+     */
+    public function getDateLimiteInscription(): DateTime
     {
         return $this->dateLimiteInscription;
     }
 
-    public function setDateLimiteInscription(\DateTimeInterface $dateLimiteInscription): self
+    /**
+     * @param DateTime $dateLimiteInscription
+     */
+    public function setDateLimiteInscription(DateTime $dateLimiteInscription): void
     {
         $this->dateLimiteInscription = $dateLimiteInscription;
-
-        return $this;
     }
 
-    public function getNbInscriptionMax(): ?int
+    /**
+     * @return int
+     */
+    public function getNbInscriptionMax(): int
     {
         return $this->nbInscriptionMax;
     }
 
-    public function setNbInscriptionMax(?int $nbInscriptionMax): self
+    /**
+     * @param int $nbInscriptionMax
+     */
+    public function setNbInscriptionMax(int $nbInscriptionMax): void
     {
         $this->nbInscriptionMax = $nbInscriptionMax;
-
-        return $this;
     }
 
-    public function getInfosSortie(): ?string
+    /**
+     * @return string
+     */
+    public function getInfosSortie(): string
     {
         return $this->infosSortie;
     }
 
-    public function setInfosSortie(?string $infosSortie): self
+    /**
+     * @param string $infosSortie
+     */
+    public function setInfosSortie(string $infosSortie): void
     {
         $this->infosSortie = $infosSortie;
-
-        return $this;
     }
 
     /**
-     * @return mixed
+     * @return Etat
      */
-    public function getEtat()
+    public function getEtat(): Etat
     {
         return $this->etat;
     }
 
     /**
-     * @param mixed $etat
+     * @param Etat $etat
      */
-    public function setEtat($etat): void
+    public function setEtat(Etat $etat): void
     {
         $this->etat = $etat;
     }
 
     /**
-     * @return mixed
+     * @return Participant
      */
-    public function getOrganisateur()
+    public function getOrganisateur(): Participant
     {
         return $this->organisateur;
     }
 
     /**
-     * @param mixed $organisateur
+     * @param Participant $organisateur
      */
-    public function setOrganisateur($organisateur): void
+    public function setOrganisateur(Participant $organisateur): void
     {
         $this->organisateur = $organisateur;
     }
@@ -211,7 +245,6 @@ class Sortie
 
     /**
      * @param ArrayCollection $inscrit
-     * @return Sortie|null
      */
     public function setInscrit(ArrayCollection $inscrit): void
     {
@@ -219,37 +252,36 @@ class Sortie
     }
 
     /**
-     * @return mixed
+     * @return Lieu
      */
-    public function getLieu()
+    public function getLieu(): Lieu
     {
         return $this->lieu;
     }
 
     /**
-     * @param mixed $lieu
+     * @param Lieu $lieu
      */
-    public function setLieu($lieu): void
+    public function setLieu(Lieu $lieu): void
     {
         $this->lieu = $lieu;
     }
 
     /**
-     * @return mixed
+     * @return Site
      */
-    public function getSite()
+    public function getSite(): Site
     {
         return $this->site;
     }
 
     /**
-     * @param mixed $site
+     * @param Site $site
      */
-    public function setSite($site): void
+    public function setSite(Site $site): void
     {
         $this->site = $site;
     }
-
 
 
 }

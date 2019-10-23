@@ -47,15 +47,19 @@ class DavidController extends Controller
      * @Route("/annulerSorite/{id}", name="annulertSortie")
      * @param Sortie $sortieAnnule
      * @param ObjectManager $objectManager
+     * @param Participant $participant
      * @return JsonResponse
+     * @throws \ErrorException
      */
     public function annulationSortie(Sortie $sortieAnnule, ObjectManager $objectManager, Participant $participant)
     {
-        if($participant->)
+        if($participant->getId() === $sortieAnnule->getOrganisateur()->getId() || $participant->isAdministrateur()=== true)
         {
             $objectManager->remove($sortieAnnule);
             $objectManager->flush();
 
+        }else{
+            throw new \ErrorException('Vous n\'avez pas les droits!');
         }
 
 

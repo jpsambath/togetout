@@ -6,14 +6,13 @@ use App\Entity\Lieu;
 use App\Entity\Participant;
 use App\Entity\Sortie;
 use App\Entity\Ville;
-use App\Repository\LieuRepository;
 use App\Repository\UserRepository;
 use Doctrine\Common\Persistence\ObjectManager;
-use http\Env\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Config\Tests\Util\Validator;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DavidController extends Controller
 {
@@ -118,10 +117,9 @@ class DavidController extends Controller
     /**
      * @Route("/recuperationJasonLieu" , name="recuperationJasonLieu")
      * @param Request $request
-     * @param Validator $validator
-     * @throws \ErrorException
+     * @param ValidatorInterface $validator
      */
-    public  function recuperationLieuJson(Request $request,Validator $validator)
+    public  function recuperationLieuJson(Request $request,ValidatorInterface $validator)
     {
         try{
             $lieuRecu = $request->getContent();
@@ -133,7 +131,7 @@ class DavidController extends Controller
             }
             $tab['statut'] = "ok";
             $tab['lieuRecu'] = $lieuRecu;
-        } catch{
+        } catch(\Exception $e) {
 
             $tab['statut'] = 'erreur';
             $tab['lieuNonRecu'] = 'le lieu n\'à pas été transmit correctement';

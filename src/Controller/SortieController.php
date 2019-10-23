@@ -3,10 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\Sortie;
+use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class SortieController
+ * @package App\Controller
+ * @Route("/api")
+ */
 class SortieController extends Controller
 {
     /**
@@ -23,6 +29,7 @@ class SortieController extends Controller
      * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
      * @param Sortie $sortie
      * @return void
+     * @throws ErrorException
      */
     public function inscriptionSortie(Sortie $sortie)
     {
@@ -35,6 +42,7 @@ class SortieController extends Controller
      * @Route("/desistementSortie/{id}", name="desistementSortie")
      * @param Sortie $sortie
      * @return void
+     * @throws ErrorException
      */
     public function desistementSortie(Sortie $sortie)
     {
@@ -74,4 +82,5 @@ class SortieController extends Controller
 
 
     //,json_decode($request->get("checkFiltreOrganisateur")),json_decode($request->get("checkFiltreInscrit")),json_decode($request->get("checkFiltrePasInscrit")),json_decode($request->get("checkFiltreSortiePasse")),json_decode($request->get("filtreDateDebut")),json_decode($request->get("filtreDateFin")),json_decode($request->get("filtreSaisieNom"))
+
 }

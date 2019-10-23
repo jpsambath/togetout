@@ -3,16 +3,19 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity(fields={"username"}, message="There is already an account with this username")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
  * @UniqueEntity(fields={"telephone"}, message="There is already an account with this phone")
+ * @Serializer\ExclusionPolicy("ALL")
  */
 class Participant implements UserInterface
 {
@@ -20,6 +23,7 @@ class Participant implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Expose
      */
     private $id;
 
@@ -28,15 +32,16 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $nom;
 
 
     /**
-     *@var string
-     * @ORM\Column(type="string", length=180)
+     * @var string
+     * @ORM\Column(type="string", length=180, nullable=true)
      * @Assert\Length(max="180")
-     * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $prenom;
 
@@ -45,11 +50,12 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $username;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="json_array")
      */
     private $roles = [];
 
@@ -58,61 +64,64 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $password;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $email;
 
     /**
      * @var string
-     * @ORM\Column(type="integer", length=15, unique=true)
+     * @ORM\Column(type="integer", length=15, unique=true, nullable=true)
+     * @Serializer\Expose
      */
     private $telephone;
 
     /**
      * @var boolean
      * @ORM\Column(type="boolean", nullable=false)
+     * @Serializer\Expose
      */
     private $administrateur;
 
     /**
      * @var boolean
      * @ORM\Column(type="boolean", nullable=false)
+     * @Serializer\Expose
      */
     private $actif;
 
     /**
-     * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie", inversedBy="participants")
      */
-    private $sortie;
-
+    private $sorties;
 
     /**
-     * @var Sortie
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
      */
     private $sortieCreer;
 
     /**
-     * @var Site
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $site;
 
-    /**
-     * Participant constructor.
-     */
     public function __construct()
     {
-        $this->administrateur = false;
+        $this->sorties = new ArrayCollection();
+        $this->sortieCreer = new ArrayCollection();
         $this->actif = true;
-        $this->sortie = new ArrayCollection();
+        $this->administrateur = false;
+        $this->roles[] = "ROLE_USER";
     }
+
 
 
     public function getId(): ?int
@@ -219,7 +228,7 @@ class Participant implements UserInterface
     /**
      * @return string
      */
-    public function getTelephone(): string
+    public function getTelephone(): ?string
     {
         return $this->telephone;
     }
@@ -264,54 +273,6 @@ class Participant implements UserInterface
         $this->actif = $actif;
     }
 
-    /**
-     * @return ArrayCollection
-     */
-    public function getSortie(): ArrayCollection
-    {
-        return $this->sortie;
-    }
-
-    /**
-     * @param ArrayCollection $sortie
-     */
-    public function setSortie(ArrayCollection $sortie): void
-    {
-        $this->sortie = $sortie;
-    }
-
-    /**
-     * @return Sortie
-     */
-    public function getSortieCreer(): Sortie
-    {
-        return $this->sortieCreer;
-    }
-
-    /**
-     * @param Sortie $sortieCreer
-     */
-    public function setSortieCreer(Sortie $sortieCreer): void
-    {
-        $this->sortieCreer = $sortieCreer;
-    }
-
-    /**
-     * @return Site
-     */
-    public function getSite(): Site
-    {
-        return $this->site;
-    }
-
-    /**
-     * @param Site $site
-     */
-    public function setSite(Site $site): void
-    {
-        $this->site = $site;
-    }
-
 
 
     /**
@@ -329,6 +290,75 @@ class Participant implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection|Sortie[]
+     */
+    public function getSorties(): Collection
+    {
+        return $this->sorties;
+    }
+
+    public function addSorty(Sortie $sortie): self
+    {
+        if (!$this->sorties->contains($sortie)) {
+            $this->sorties[] = $sortie;
+        }
+
+        return $this;
+    }
+
+    public function removeSorty(Sortie $sortie): self
+    {
+        if ($this->sorties->contains($sortie)) {
+            $this->sorties->removeElement($sortie);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Sortie[]
+     */
+    public function getSortieCreer(): Collection
+    {
+        return $this->sortieCreer;
+    }
+
+    public function addSortieCreer(Sortie $sortieCreer): self
+    {
+        if (!$this->sortieCreer->contains($sortieCreer)) {
+            $this->sortieCreer[] = $sortieCreer;
+            $sortieCreer->setOrganisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSortieCreer(Sortie $sortieCreer): self
+    {
+        if ($this->sortieCreer->contains($sortieCreer)) {
+            $this->sortieCreer->removeElement($sortieCreer);
+            // set the owning side to null (unless already changed)
+            if ($sortieCreer->getOrganisateur() === $this) {
+                $sortieCreer->setOrganisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSite(): ?Site
+    {
+        return $this->site;
+    }
+
+    public function setSite(?Site $site): self
+    {
+        $this->site = $site;
+
+        return $this;
     }
 
 

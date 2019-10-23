@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Sortie;
+use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,6 +29,7 @@ class SortieController extends Controller
      * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
      * @param Sortie $sortie
      * @return void
+     * @throws ErrorException
      */
     public function inscriptionSortie(Sortie $sortie)
     {
@@ -40,6 +42,7 @@ class SortieController extends Controller
      * @Route("/desistementSortie/{id}", name="desistementSortie")
      * @param Sortie $sortie
      * @return void
+     * @throws ErrorException
      */
     public function desistementSortie(Sortie $sortie)
     {

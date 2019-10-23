@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Participant;
 use App\Entity\User;
-use App\Form\RegistrationFormType;
 use App\Security\SecurityAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;

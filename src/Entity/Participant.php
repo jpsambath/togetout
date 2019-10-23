@@ -7,12 +7,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity(fields={"username"}, message="There is already an account with this username")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
  * @UniqueEntity(fields={"telephone"}, message="There is already an account with this phone")
+ * @Serializer\ExclusionPolicy("ALL")
  */
 class Participant implements UserInterface
 {
@@ -20,6 +22,7 @@ class Participant implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Expose
      */
     private $id;
 
@@ -28,6 +31,7 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $nom;
 
@@ -37,6 +41,7 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $prenom;
 
@@ -45,6 +50,7 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $username;
 
@@ -58,36 +64,42 @@ class Participant implements UserInterface
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
      * @Assert\NotBlank()
+     * @Serializer\Expose
      */
     private $password;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Serializer\Expose
      */
     private $email;
 
     /**
      * @var string
      * @ORM\Column(type="integer", length=15, unique=true)
+     * @Serializer\Expose
      */
     private $telephone;
 
     /**
      * @var boolean
      * @ORM\Column(type="boolean", nullable=false)
+     * @Serializer\Expose
      */
     private $administrateur;
 
     /**
      * @var boolean
      * @ORM\Column(type="boolean", nullable=false)
+     * @Serializer\Expose
      */
     private $actif;
 
     /**
      * @var ArrayCollection
      * @ORM\ManyToMany(targetEntity="App\Entity\Sortie")
+     * @Serializer\Expose
      */
     private $sortie;
 
@@ -95,12 +107,14 @@ class Participant implements UserInterface
     /**
      * @var Sortie
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
+     * @Serializer\Expose
      */
     private $sortieCreer;
 
     /**
      * @var Site
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
+     * @Serializer\Expose
      */
     private $site;
 

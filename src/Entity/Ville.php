@@ -75,5 +75,4 @@ class Ville
         $this->codePostal = $codePostal;
     }
 
-
 }

@@ -48,8 +48,8 @@ class Lieu
     private $longitude;
 
     /**
-     * @var Ville
      * @ORM\ManyToOne(targetEntity="App\Entity\Ville")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $ville;
 
@@ -141,21 +141,16 @@ class Lieu
         return $this;
     }
 
-    /**
-     * @return Ville
-     */
-    public function getVille(): Ville
+    public function getVille(): ?Ville
     {
         return $this->ville;
     }
 
-    /**
-     * @param Ville $ville
-     */
-    public function setVille(Ville $ville): void
+    public function setVille(?Ville $ville): self
     {
         $this->ville = $ville;
-    }
 
+        return $this;
+    }
 
 }

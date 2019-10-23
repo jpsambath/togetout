@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ErrorException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -64,42 +65,40 @@ class Sortie
     private $infosSortie;
 
     /**
-     * @var Etat
-     * @ORM\ManyToOne(targetEntity="App\Entity\Etat")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Participant", mappedBy="sorties")
      */
-    private $etat;
+    private $participants;
 
     /**
-     * @var Participant
      * @ORM\ManyToOne(targetEntity="App\Entity\Participant", inversedBy="sortieCreer")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $organisateur;
 
     /**
-     * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\Participant")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Etat")
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $inscrit;
-
+    private $etat;
 
     /**
-     * @var Lieu
-     * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
-     */
-    private $lieu;
-
-    /**
-     * @var Site
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $site;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Lieu")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $lieu;
 
     /**
      * Sortie constructor.
      */
     public function __construct()
     {
-        $this->inscrit = new ArrayCollection();
+        $this->participants = new ArrayCollection();
     }
 
 
@@ -204,116 +203,6 @@ class Sortie
         $this->infosSortie = $infosSortie;
     }
 
-    /**
-     * @return Etat
-     */
-    public function getEtat(): Etat
-    {
-        return $this->etat;
-    }
-
-    /**
-     * @param Etat $etat
-     */
-    public function setEtat(Etat $etat): void
-    {
-        $this->etat = $etat;
-    }
-
-    /**
-     * @return Participant
-     */
-    public function getOrganisateur(): Participant
-    {
-        return $this->organisateur;
-    }
-
-    /**
-     * @param Participant $organisateur
-     */
-    public function setOrganisateur(Participant $organisateur): void
-    {
-        $this->organisateur = $organisateur;
-    }
-
-    /**
-     * @return ArrayCollection
-     */
-    public function getInscrit(): ArrayCollection
-    {
-        return $this->inscrit;
-    }
-
-    /**
-     * @param ArrayCollection $inscrit
-     */
-    public function setInscrit(ArrayCollection $inscrit): void
-    {
-        $this->inscrit = $inscrit;
-    }
-
-    /**
-     * @return Lieu
-     */
-    public function getLieu(): Lieu
-    {
-        return $this->lieu;
-    }
-
-    /**
-     * @param Lieu $lieu
-     */
-    public function setLieu(Lieu $lieu): void
-    {
-        $this->lieu = $lieu;
-    }
-
-    /**
-     * @return Site
-     */
-    public function getSite(): Site
-    {
-        return $this->site;
-    }
-
-    /**
-     * @param Site $site
-     */
-    public function setSite(Site $site): void
-    {
-        $this->site = $site;
-    }
-
-
-    /**
-     * @param Participant $participant
-     * @throws ErrorException
-     */
-    public function inscrirePArticipant(Participant $participant): void
-    {
-        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getInscrit()->count() < $this->getNbInscriptionMax())
-        {
-        $this->inscrit->set($participant->getId(), $participant->getUsername());
-        } else
-        {
-            throw new ErrorException('il n\'est plus possible de s\'inscrire !');
-        }
-    }
-
-    /**
-     * @param Participant $participant
-     * @throws ErrorException
-     */
-    public function desinscrirePArticipant(Participant $participant): void
-    {
-        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE && $this->getDateLimiteInscription() > (new \DateTime())) )
-        {
-            $this->inscrit->removeElement($participant->getId());
-        } else
-            {
-                throw new ErrorException('il n\'est plus possible de ce désinscrire !');
-            }
-    }
 
     /**
      * @param Sortie $sortie
@@ -325,5 +214,91 @@ class Sortie
 
 
 
+    /**
+     * @return Collection|Participant[]
+     */
+    public function getParticipants(): Collection
+    {
+        return $this->participants;
+    }
+
+    public function addParticipant(Participant $participant): self
+    {
+        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getInscrit()->count() < $this->getNbInscriptionMax()){
+            if (!$this->participants->contains($participant)) {
+                $this->participants[] = $participant;
+                $participant->addSorty($this);
+            } else {
+                throw new ErrorException('Ce candidat est déjà inscrit !');
+            }
+        } else {
+            throw new ErrorException('il n\'est plus possible de s\'inscrire !');
+        }
+        return $this;
+    }
+
+    public function removeParticipant(Participant $participant): self
+    {
+        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE && $this->getDateLimiteInscription() > (new \DateTime())) ){
+            if ($this->participants->contains($participant)) {
+                $this->participants->removeElement($participant);
+                $participant->removeSorty($this);
+            } else {
+                throw new ErrorException('Ce candidat n\'est pas inscrit !');
+            }
+        } else  {
+            throw new ErrorException('il n\'est plus possible de ce désinscrire !');
+        }
+
+        return $this;
+    }
+
+    public function getOrganisateur(): ?Participant
+    {
+        return $this->organisateur;
+    }
+
+    public function setOrganisateur(?Participant $organisateur): self
+    {
+        $this->organisateur = $organisateur;
+
+        return $this;
+    }
+
+    public function getEtat(): ?Etat
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?Etat $etat): self
+    {
+        $this->etat = $etat;
+
+        return $this;
+    }
+
+    public function getSite(): ?Site
+    {
+        return $this->site;
+    }
+
+    public function setSite(?Site $site): self
+    {
+        $this->site = $site;
+
+        return $this;
+    }
+
+    public function getLieu(): ?Lieu
+    {
+        return $this->lieu;
+    }
+
+    public function setLieu(?Lieu $lieu): self
+    {
+        $this->lieu = $lieu;
+
+        return $this;
+    }
 
 }

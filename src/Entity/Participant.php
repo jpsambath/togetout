@@ -219,7 +219,7 @@ class Participant implements UserInterface
     /**
      * @return string
      */
-    public function getTelephone(): string
+    public function getTelephone(): ?string
     {
         return $this->telephone;
     }
@@ -283,7 +283,7 @@ class Participant implements UserInterface
     /**
      * @return Sortie
      */
-    public function getSortieCreer(): Sortie
+    public function getSortieCreer(): ?Sortie
     {
         return $this->sortieCreer;
     }
@@ -299,7 +299,7 @@ class Participant implements UserInterface
     /**
      * @return Site
      */
-    public function getSite(): Site
+    public function getSite(): ?Site
     {
         return $this->site;
     }

@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class ParticipantController
  * @package App\Controller
- * @Route("/participant", name="participant_")
+ * @Route("/api/participant", name="participant_")
  */
 class ParticipantController extends Controller
 {

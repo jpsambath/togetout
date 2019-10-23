@@ -82,4 +82,5 @@ class SortieController extends Controller
 
 
     //,json_decode($request->get("checkFiltreOrganisateur")),json_decode($request->get("checkFiltreInscrit")),json_decode($request->get("checkFiltrePasInscrit")),json_decode($request->get("checkFiltreSortiePasse")),json_decode($request->get("filtreDateDebut")),json_decode($request->get("filtreDateFin")),json_decode($request->get("filtreSaisieNom"))
+
 }

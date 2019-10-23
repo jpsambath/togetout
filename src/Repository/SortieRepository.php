@@ -36,36 +36,96 @@ class SortieRepository extends ServiceEntityRepository
 
     /**
      * @param $site
+     * @param $organisateur
+     * @param $inscrit
+     * @param $pasInscrit
+     * @param $etat
+     * @param $texteRecherche
+     * @param $idParticipant
+     * @param $dateDebut
+     * @param $dateFin
      * @return Sortie[] Returns an array of Sortie objects
      */
-    public function findSortieBySite($site)
+    public function findSortie($site,$organisateur,$inscrit,$pasInscrit,$sortiePassee,$texteRecherche,$idParticipant,$dateDebut,$dateFin)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.site = :site')
-            ->setParameter('site', $site)
-            ->getQuery()
+        //Les variables $inscrit, $organisateur, $pasInscrit et $sortiePassee sont des boolean.
+
+        //Vérifie si le checkOrganisateur est cochée
+        if ($organisateur){
+            $organisteur = $idParticipant;
+        }
+        //Vérifie si le checkFiltreInscrit est cochée
+        if ($inscrit){
+
+        }
+
+        //Vérifie si le checkFiltrePasInscrit est cochée
+        if ($pasInscrit){
+
+        }
+
+        //Vérifie si le checkFiltreSortiePasse est cochée
+        if ($sortiePassee){
+            $etat="Passée";
+        }else{
+            $etat="";
+        }
+
+        $query = $this->createQueryBuilder('s')
+            ->select('*')
+            ->from('sortie')
+            ->orWhere('s.site = :site')
+            ->setParameter('site', $site);
+
+
+            $query->orWhere('s.organisateur_id = :organisateur')
+            ->setParameter('organisateur', $organisateur);
+
+
+            $query->orWhere('s.inscrit = :inscrit')
+            ->setParameter('inscrit', $inscrit);
+
+            if ($i==$i){
+                $query->orWhere('s.nom LIKE :texte')
+                ->setParameter('texte','%'.$texteRecherche.'%');
+            }
+
+
+            $query->orWhere('s.etat = :etat')
+            ->setParameter('etat', $etat);
+
+            $query->orWhere('s.dateHeureDebut BETWEEN :debut AND :fin')
+            ->setParameter('debut', $dateDebut)
+            ->setParameter('fin', $dateFin);
+
+
+            $query->getQuery()
             ->getResult();
+
+            return $query;
     }
+
+
 
     /**
      * @param $organisateur
      * @return Sortie[] Returns an array of Sortie objects
      */
-    public function findSortieByOrganisateur($organisateur)
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.organisateur = :organisateur')
-            ->setParameter('organisateur', $organisateur)
-            ->getQuery()
-            ->getResult()
-            ;
-    }
+    /*public function findSortieByOrganisateur($organisateur)
+{
+    return $this->createQueryBuilder('s')
+        ->andWhere('s.organisateur = :organisateur')
+        ->setParameter('organisateur', $organisateur)
+        ->getQuery()
+        ->getResult()
+        ;
+}*/
 
     /**
      * @param $inscrit
      * @return Sortie[] Returns an array of Sortie objects
      */
-    public function findSortieByInscrit($inscrit)
+    /*public function findSortieByInscrit($inscrit)
     {
         return $this->createQueryBuilder('s')
             ->andWhere('s.inscrit = :inscrit')
@@ -73,14 +133,14 @@ class SortieRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
             ;
-    }
+    }*/
 
     /**
      * @param $debut
      * @param $fin
      * @return Sortie[] Returns an array of Sortie objects
      */
-    public function findSortieByIntervalleDate($debut,$fin)
+    /*public function findSortieByIntervalleDate($debut,$fin)
     {
         return $this->createQueryBuilder('s')
             ->Where('s.dateHeureDebut BETWEEN :debut AND :fin')
@@ -89,27 +149,27 @@ class SortieRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
             ;
-    }
+    }*/
 
     /**
      * @return Sortie[] Returns an array of Sortie objects
      * @throws Exception
      */
-    public function findSortiePassees()
+    /*public function findSortiePassees()
     {
         return $this->createQueryBuilder('s')
-            ->andWhere('s.dateHeureDebut < :dateDuJour')
-            ->setParameter('dateDuJour', new \DateTime("now"))
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', $etat)
             ->getQuery()
             ->getResult()
             ;
-    }
+    }*/
 
     /**
      * @param $texteRecherche
      * @return Sortie[] Returns an array of Sortie objects
      */
-    public function findSortieByNom($texteRecherche)
+    /*public function findSortieByNom($texteRecherche)
     {
         return $this->createQueryBuilder('s')
             ->andWhere('s.nom LIKE :texte')
@@ -117,7 +177,7 @@ class SortieRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
             ;
-    }
+    }*/
 
     /*
     public function findOneBySomeField($value): ?Sortie

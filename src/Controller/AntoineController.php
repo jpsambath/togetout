@@ -29,15 +29,25 @@ class AntoineController extends Controller
         $listeSortie = $this->getDoctrine()
             ->getManager()
             ->getRepository('App\Entity\Sortie')
-            ->findSortie(json_decode($request->get("selectSite")),
-                json_decode($request->get("checkFiltreOrganisateur")),
-                json_decode($request->get("checkFiltreInscrit")),
-                json_decode($request->get("checkFiltrePasInscrit")),
-                json_decode($request->get("checkFiltreSortiePasse")),
-                json_decode($request->get("filtreSaisieNom")),
-                json_decode($request->get("idParticipant")),
-                json_decode($request->get("filtreDateDebut")),
-                json_decode($request->get("filtreDateFin")));
+            ->findSortie(json_decode($request->get("selectSite")), //Id du site selectionné
+                json_decode($request->get("checkFiltreOrganisateur")), //Boolean
+                json_decode($request->get("checkFiltreInscrit")), //Boolean
+                json_decode($request->get("checkFiltrePasInscrit")), //Boolean
+                json_decode($request->get("checkFiltreSortiePasse")), //Boolean
+                json_decode($request->get("filtreSaisieNom")), //Valeur de l'input
+                json_decode($request->get("idParticipant")), //Id de l'utilisateur connecté
+                json_decode($request->get("filtreDateDebut")), //valeur de l'input de type date du premier intervalle
+                json_decode($request->get("filtreDateFin"))); //valeur de l'input de type date du deuxième intervalle
         return new JsonResponse(json_encode(['listeSortie' => $listeSortie]));
+    }
+
+    /**
+     * @Route("/creerSortie", name="creerSortie")
+     * @param Request $request
+     * @return JsonResponse
+     **/
+    public function creerSortie(Request $request)
+    {
+
     }
 }

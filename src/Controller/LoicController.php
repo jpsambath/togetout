@@ -2,13 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\Participant;
-use App\Entity\Site;
+use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class LoicController
@@ -27,63 +27,51 @@ class LoicController extends Controller
 
 
     /**
-     * @Route("/responseJSON/{id}")
+     * @Route("/responseJSON")
      * @param Request $request
+     * @param LoggerInterface $logger
+     * @param ValidatorInterface $validator
+     * @param ObjectManager $objectManager
      * @return Response
      */
-    public function sendJSON(Request $request, LoggerInterface $logger)
+    public function sendJSON(Request $request, LoggerInterface $logger, ValidatorInterface $validator, ObjectManager $objectManager)
     {
-        $logger->info($request->get("participant"));
-        //$data = $request->getContent();
-        //$participantRecu = $this->get('jms_serializer')->deserialize($data, 'AppBundle\Entity\Article', 'json');
-        //$this->get('validator')->validate($participant);
+        try {
+            if ($request->getContent() != null) {
+                $participantRecu = $request->getContent();
+                $participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, 'App\Entity\Participant', 'json');
+                $error = $validator->validate($participantRecu);
+            } else {
+                throw new \ErrorException("Aucune valeur recue !");
+            }
 
-        $participant = new Participant();
-        $participant2 = new Participant();
+            if (count($error) > 0) {
+                throw new \ErrorException("Erreur lors de la validation !");
+            }
 
-        $participant->setNom('ROY');
-        $participant->setPrenom('Loïc');
-        $participant->setEmail('loic.roy2019@campus-eni.fr');
-        $participant->setUsername('username');
-        $participant->setPassword('123456789/Test');
+            $objectManager->persist($participantRecu);
+            $objectManager->flush();
 
-        $participant2->setNom('ROY2');
-        $participant2->setPrenom('Loïc2');
-        $participant2->setEmail('loic.roy2019@campus-eni.fr2');
-        $participant2->setUsername('username2');
-        $participant2->setPassword('123456789/Test2');
-        $participant2->setSite(new Site());
+            $tab['statut'] = "ok";
+            $tab['participant'] = $participantRecu;
 
-        $tab['statut'] = "ok";
-        //$tab["objetRecu"] = $participantRecu;
-        $tab['test'] = "test";
-        $tab['participants'][] = $participant;
-        $tab['participants'][] = $participant2;
 
-        $data = $this->get('jms_serializer')->serialize($tab, 'json');
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
 
-        $response = new Response($data);
-        $response->headers->set('Content-Type', 'application/json');
-
-        //var_dump($response);
-
-        return $response;
+        } finally {
+            return $this->renvoiJSON($tab);
+        }
     }
 
-    /**
-     * @Route("/requestJSON", methods={"POST"})
-     * @param Request $request
-     * @return Response
-     */
-    public function getJSON(Request $request)
-    {
-        $data = $request->getContent();
-        $participant = $this->get('jms_serializer')->deserialize($data, 'AppBundle\Entity\Article', 'json');
-        $this->get('validator')->validate($participant);
+   private function renvoiJSON($data){
+       $dataJSON = $this->get('jms_serializer')->serialize($data, 'json');
 
-        var_dump($participant);
+       $response = new Response($dataJSON);
+       $response->headers->set('Content-Type', 'application/json');
 
-        return new Response('', Response::HTTP_CREATED);
-    }
+       return $response;
+   }
 
 }

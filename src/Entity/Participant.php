@@ -38,10 +38,9 @@ class Participant implements UserInterface
 
 
     /**
-     *@var string
-     * @ORM\Column(type="string", length=180)
+     * @var string
+     * @ORM\Column(type="string", length=180, nullable=true)
      * @Assert\Length(max="180")
-     * @Assert\NotBlank()
      * @Serializer\Expose
      */
     private $prenom;
@@ -72,13 +71,14 @@ class Participant implements UserInterface
     /**
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank()
      * @Serializer\Expose
      */
     private $email;
 
     /**
      * @var string
-     * @ORM\Column(type="integer", length=15, unique=true)
+     * @ORM\Column(type="integer", length=15, unique=true, nullable=true)
      * @Serializer\Expose
      */
     private $telephone;
@@ -109,7 +109,7 @@ class Participant implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $site;
 
@@ -117,6 +117,9 @@ class Participant implements UserInterface
     {
         $this->sorties = new ArrayCollection();
         $this->sortieCreer = new ArrayCollection();
+        $this->actif = true;
+        $this->administrateur = false;
+        $this->roles[] = "ROLE_USER";
     }
 
 

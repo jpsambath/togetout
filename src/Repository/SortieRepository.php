@@ -119,6 +119,12 @@ class SortieRepository extends ServiceEntityRepository
             ;
     }
 
+    /**
+     * @param $sortie
+     * @throws Exception
+     */
+
+
     /*
     public function findOneBySomeField($value): ?Sortie
     {

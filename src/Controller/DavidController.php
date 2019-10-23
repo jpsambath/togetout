@@ -11,6 +11,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -114,23 +115,25 @@ class DavidController extends Controller
     }
 
 
+
+
     /**
-     * @Route("/recuperationJasonLieu" , name="recuperationJasonLieu")
+     *  @Route("/recuperationJasonsortie" , name="recuperationJasonSortie")
      * @param Request $request
      * @param ValidatorInterface $validator
      */
-    public  function recuperationLieuJson(Request $request,ValidatorInterface $validator)
+    public  function recuperationSortieJson(Request $request,ValidatorInterface $validator)
     {
         try{
-            $lieuRecu = $request->getContent();
-            $lieuRecu = $this->get('jms_serializer')->deserialize($lieuRecu, 'AppBundle\Entity\Lieu', 'json');
-            $error = $validator->validate($lieuRecu);
+            $sortieRecu = $request->getContent();
+            $sortieRecu = $this->get('jms_serializer')->deserialize($sortieRecu, 'AppBundle\Entity\Lieu', 'json');
+            $error = $validator->validate($sortieRecu);
 
             if(count($error) > 0) {
                 throw new \ErrorException("Erreur lors de la validation");
             }
             $tab['statut'] = "ok";
-            $tab['lieuRecu'] = $lieuRecu;
+            $tab['lieuRecu'] = $sortieRecu;
         } catch(\Exception $e) {
 
             $tab['statut'] = 'erreur';
@@ -138,5 +141,47 @@ class DavidController extends Controller
         }
     }
 
+    private function renvoiSortieJSON($data){
+        $dataJSON = $this->get('jms_serializer')->serialize($data, 'json');
 
+        $response = new Response($dataJSON);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+    public function desactiverUtilisateur(Participant $participant, $request, $validator, $listeChangementEtat, $objectManager)
+    {
+        if ($request->getContent() != null) {
+            $listeChangementEtat = $request->getContent();
+            $listeChangementEtat = $this->get('jms_serializer')->deserialize($listeChangementEtat, 'App\Entity\Participant', 'json');
+            $error = $validator->validate($listeChangementEtat);
+        } else {
+            throw new \ErrorException("Aucune valeur recue !");
+        }
+
+        if($participant->isAdministrateur()=== true && $listeChangementEtat === null){
+            foreach ($listeChangementEtat as $participant){
+                $objectManager->persist($participant);
+                $objectManager->flush();
+            }
+        }
+    }
+
+    public function supprimerUtilisateur(Participant $participant, $request, $validator, $listeChangementEtat, $objectManager)
+    {
+        if ($request->getContent() != null) {
+            $listeChangementEtat = $request->getContent();
+            $listeChangementEtat = $this->get('jms_serializer')->deserialize($listeChangementEtat, 'App\Entity\Participant', 'json');
+            $error = $validator->validate($listeChangementEtat);
+        } else {
+            throw new \ErrorException("Aucune valeur recue !");
+        }
+
+        if($participant->isAdministrateur()=== true && $listeChangementEtat === null){
+            foreach ($listeChangementEtat as $participant){
+                $objectManager->remove($participant);
+                $objectManager->flush();
+            }
+        }
+    }
 }

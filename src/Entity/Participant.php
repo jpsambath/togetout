@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -55,7 +56,7 @@ class Participant implements UserInterface
     private $username;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="json_array")
      */
     private $roles = [];
 
@@ -97,36 +98,27 @@ class Participant implements UserInterface
     private $actif;
 
     /**
-     * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie")
-     * @Serializer\Expose
+     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie", inversedBy="participants")
      */
-    private $sortie;
-
+    private $sorties;
 
     /**
-     * @var Sortie
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
-     * @Serializer\Expose
      */
     private $sortieCreer;
 
     /**
-     * @var Site
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
-     * @Serializer\Expose
+     * @ORM\JoinColumn(nullable=false)
      */
     private $site;
 
-    /**
-     * Participant constructor.
-     */
     public function __construct()
     {
-        $this->administrateur = false;
-        $this->actif = true;
-        $this->sortie = new ArrayCollection();
+        $this->sorties = new ArrayCollection();
+        $this->sortieCreer = new ArrayCollection();
     }
+
 
 
     public function getId(): ?int
@@ -278,54 +270,6 @@ class Participant implements UserInterface
         $this->actif = $actif;
     }
 
-    /**
-     * @return ArrayCollection
-     */
-    public function getSortie(): ArrayCollection
-    {
-        return $this->sortie;
-    }
-
-    /**
-     * @param ArrayCollection $sortie
-     */
-    public function setSortie(ArrayCollection $sortie): void
-    {
-        $this->sortie = $sortie;
-    }
-
-    /**
-     * @return Sortie
-     */
-    public function getSortieCreer(): ?Sortie
-    {
-        return $this->sortieCreer;
-    }
-
-    /**
-     * @param Sortie $sortieCreer
-     */
-    public function setSortieCreer(Sortie $sortieCreer): void
-    {
-        $this->sortieCreer = $sortieCreer;
-    }
-
-    /**
-     * @return Site
-     */
-    public function getSite(): ?Site
-    {
-        return $this->site;
-    }
-
-    /**
-     * @param Site $site
-     */
-    public function setSite(Site $site): void
-    {
-        $this->site = $site;
-    }
-
 
 
     /**
@@ -343,5 +287,74 @@ class Participant implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection|Sortie[]
+     */
+    public function getSorties(): Collection
+    {
+        return $this->sorties;
+    }
+
+    public function addSorty(Sortie $sortie): self
+    {
+        if (!$this->sorties->contains($sortie)) {
+            $this->sorties[] = $sortie;
+        }
+
+        return $this;
+    }
+
+    public function removeSorty(Sortie $sortie): self
+    {
+        if ($this->sorties->contains($sortie)) {
+            $this->sorties->removeElement($sortie);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Sortie[]
+     */
+    public function getSortieCreer(): Collection
+    {
+        return $this->sortieCreer;
+    }
+
+    public function addSortieCreer(Sortie $sortieCreer): self
+    {
+        if (!$this->sortieCreer->contains($sortieCreer)) {
+            $this->sortieCreer[] = $sortieCreer;
+            $sortieCreer->setOrganisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSortieCreer(Sortie $sortieCreer): self
+    {
+        if ($this->sortieCreer->contains($sortieCreer)) {
+            $this->sortieCreer->removeElement($sortieCreer);
+            // set the owning side to null (unless already changed)
+            if ($sortieCreer->getOrganisateur() === $this) {
+                $sortieCreer->setOrganisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSite(): ?Site
+    {
+        return $this->site;
+    }
+
+    public function setSite(?Site $site): self
+    {
+        $this->site = $site;
+
+        return $this;
     }
 }

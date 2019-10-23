@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Participant;
 use App\Entity\Site;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,10 +31,11 @@ class LoicController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function sendJSON(Request $request)
+    public function sendJSON(Request $request, LoggerInterface $logger)
     {
-        $data = $request->get("participant");
-        $participantRecu = $this->get('jms_serializer')->deserialize($data, 'AppBundle\Entity\Article', 'json');
+        $logger->info($request->get("participant"));
+        //$data = $request->getContent();
+        //$participantRecu = $this->get('jms_serializer')->deserialize($data, 'AppBundle\Entity\Article', 'json');
         //$this->get('validator')->validate($participant);
 
         $participant = new Participant();
@@ -53,7 +55,7 @@ class LoicController extends Controller
         $participant2->setSite(new Site());
 
         $tab['statut'] = "ok";
-        $tab["objetRecu"] = $participantRecu;
+        //$tab["objetRecu"] = $participantRecu;
         $tab['test'] = "test";
         $tab['participants'][] = $participant;
         $tab['participants'][] = $participant2;

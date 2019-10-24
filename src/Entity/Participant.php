@@ -148,7 +148,7 @@ class Participant implements UserInterface
     /**
      * @return string
      */
-    public function getPrenom(): string
+    public function getPrenom(): ?string
     {
         return $this->prenom;
     }

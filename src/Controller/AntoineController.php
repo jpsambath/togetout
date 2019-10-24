@@ -2,10 +2,14 @@
 
 namespace App\Controller;
 use App\Entity\Sortie;
+use Doctrine\Common\Persistence\ObjectManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AntoineController extends Controller
 {
@@ -42,12 +46,50 @@ class AntoineController extends Controller
     }
 
     /**
-     * @Route("/creerSortie", name="creerSortie")
+     * @Route("/responseJSON")
      * @param Request $request
-     * @return JsonResponse
-     **/
-    public function creerSortie(Request $request)
+     * @param LoggerInterface $logger
+     * @param ValidatorInterface $validator
+     * @param ObjectManager $objectManager
+     * @return Response
+     */
+    public function sendJSON(Request $request, LoggerInterface $logger, ValidatorInterface $validator, ObjectManager $objectManager)
     {
+        try {
+            if ($request->getContent() != null) {
+                $sortieRecu = $request->getContent();
+                $sortieRecu = $this->get('jms_serializer')->deserialize($sortieRecu, 'App\Entity\Sortie', 'json');
+                $error = $validator->validate($sortieRecu);
+            } else {
+                throw new \ErrorException("Aucune valeur recue !");
+            }
 
+            if (count($error) > 0) {
+                throw new \ErrorException("Erreur lors de la validation !");
+            }
+
+            $objectManager->persist($sortieRecu);
+            $objectManager->flush();
+
+            $tab['statut'] = "ok";
+            $tab['sortie'] = $sortieRecu;
+
+
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            return $this->renvoiJSON($tab);
+        }
+    }
+
+    private function renvoiJSON($data){
+        $dataJSON = $this->get('jms_serializer')->serialize($data, 'json');
+
+        $response = new Response($dataJSON);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
     }
 }

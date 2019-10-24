@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Participant;
 use App\Entity\Sortie;
+use DateInterval as DateIntervalAlias;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -21,7 +23,7 @@ class SortieRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $site
+     * @param $idSite
      * @param $organisateur
      * @param $inscrit
      * @param $pasInscrit
@@ -57,10 +59,13 @@ class SortieRepository extends ServiceEntityRepository
             //Vérifie si le checkFiltreSortiePasse est cochée
             if ($sortiePassee) {
                 //Sélectionne les sortie passées
+                $date= New \DateTime();
                 $query->orWhere('s.etat = :etat')
-                      ->setParameter('etat', 'Passée');
+                      ->setParameter('etat', 'Passée')
+                      ->andWhere('s.dateHeureDebut > :dateDuJourOneMonth')
+                      ->setParameter('dateDuJourOneMonth', $date->sub(new DateIntervalAlias('P1M')));
             }else{
-                //Sélectionne toutes les sortries sauf les sorties passées
+                //Sélectionne toutes les sorties sauf les sorties passées
                 $query->orWhere('s.etat <> :etat')
                     ->setParameter('etat', 'Passée');
             }
@@ -101,4 +106,5 @@ class SortieRepository extends ServiceEntityRepository
         }
             return $listeSortie;
     }
+
 }

@@ -40,14 +40,15 @@ class LoicController extends Controller
             if ($request->getContent() != null) {
                 $participantRecu = $request->getContent();
                 $participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, 'App\Entity\Participant', 'json');
-                $error = $validator->validate($participantRecu);
+                $validator->validate($participantRecu);
             } else {
                 throw new \ErrorException("Aucune valeur recue !");
             }
-
+ /*
             if (count($error) > 0) {
                 throw new \ErrorException("Erreur lors de la validation !");
             }
+ */
 
             $objectManager->persist($participantRecu);
             $objectManager->flush();
@@ -61,6 +62,7 @@ class LoicController extends Controller
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
+            $tab['action'] = "sendJSON";
             return $this->renvoiJSON($tab);
         }
     }

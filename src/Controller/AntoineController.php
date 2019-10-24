@@ -47,14 +47,14 @@ class AntoineController extends Controller
     }
 
     /**
-     * @Route("/responseJSON")
+     * @Route("/creerSortie")
      * @param Request $request
      * @param LoggerInterface $logger
      * @param ValidatorInterface $validator
      * @param ObjectManager $objectManager
      * @return Response
      */
-    public function sendJSON(Request $request, LoggerInterface $logger, ValidatorInterface $validator, ObjectManager $objectManager)
+    public function creerSortie(Request $request, LoggerInterface $logger, ValidatorInterface $validator, ObjectManager $objectManager)
     {
         try {
             if ($request->getContent() != null) {

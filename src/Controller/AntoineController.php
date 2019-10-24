@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use App\Entity\Participant;
 use App\Entity\Sortie;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerInterface;
@@ -94,13 +95,16 @@ class AntoineController extends Controller
     }
 
     //composer require symfony/swiftmailer-bundle
-    //configurer le swiftmailer-bundle dans le .env (Notre adrresse mail, UserName, mdp et smtp)
-    public function sendMail(\Swift_Mailer $mailer, $mailUser, $objetMessage,$contenuMessage,$notreEmail)
+    private function sendMailRecuperationMDP(\Swift_Mailer $mailer, Request $request)
     {
-        $message = (new \Swift_Message($objetMessage))
-        ->setFrom($notreEmail)
-        ->setTo($mailUser)
-        ->setBody($contenuMessage,'text/html');
+        $participant = json_decode($request->get("objetParticipant"));
+
+        $message = (new \Swift_Message('Réinitialisation de mot de passe'))
+        ->setFrom('togetouttest@gmail.com')
+        ->setTo($participant->getEmail())
+        ->setBody(
+            'Bonjour '.$participant->getPrenom(). ', votre nouveau mot de passe est : "'.$participant->getPassword().'".',
+            'text/html');
         $mailer->send($message);
     }
 }

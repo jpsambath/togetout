@@ -98,12 +98,13 @@ class AntoineController extends Controller
     private function sendMailRecuperationMDP(\Swift_Mailer $mailer, Request $request)
     {
         $participant = json_decode($request->get("objetParticipant"));
+        $lien = json_decode($request->get("lienDuReset"));
 
         $message = (new \Swift_Message('Réinitialisation de mot de passe'))
         ->setFrom('togetouttest@gmail.com')
         ->setTo($participant->getEmail())
         ->setBody(
-            'Bonjour '.$participant->getPrenom(). ', votre nouveau mot de passe est : "'.$participant->getPassword().'".',
+            'Bonjour '.$participant->getPrenom(). ', pour réinitialiser votre mot de passe <a href="'.$lien.'">Cliquez ici</a>',
             'text/html');
         $mailer->send($message);
     }

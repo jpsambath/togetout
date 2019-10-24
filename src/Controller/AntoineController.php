@@ -92,4 +92,15 @@ class AntoineController extends Controller
 
         return $response;
     }
+
+    //composer require symfony/swiftmailer-bundle
+    //configurer le swiftmailer-bundle dans le .env (Notre adrresse mail, UserName, mdp et smtp)
+    public function sendMail(\Swift_Mailer $mailer, $mailUser, $objetMessage,$contenuMessage,$notreEmail)
+    {
+        $message = (new \Swift_Message($objetMessage))
+        ->setFrom($notreEmail)
+        ->setTo($mailUser)
+        ->setBody($contenuMessage,'text/html');
+        $mailer->send($message);
+    }
 }

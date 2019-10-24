@@ -22,7 +22,7 @@ class SortieRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $site
+     * @param $idSite
      * @param $organisateur
      * @param $inscrit
      * @param $pasInscrit

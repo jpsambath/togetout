@@ -99,11 +99,13 @@ class Participant implements UserInterface
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Sortie", inversedBy="participants")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $sorties;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $sortieCreer;
 
@@ -112,6 +114,7 @@ class Participant implements UserInterface
      * @ORM\JoinColumn(nullable=true)
      */
     private $site;
+
 
     public function __construct()
     {
@@ -360,4 +363,5 @@ class Participant implements UserInterface
 
         return $this;
     }
+
 }

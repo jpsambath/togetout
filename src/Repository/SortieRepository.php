@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Participant;
 use App\Entity\Sortie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -60,7 +61,7 @@ class SortieRepository extends ServiceEntityRepository
                 $query->orWhere('s.etat = :etat')
                       ->setParameter('etat', 'Passée');
             }else{
-                //Sélectionne toutes les sortries sauf les sorties passées
+                //Sélectionne toutes les sorties sauf les sorties passées
                 $query->orWhere('s.etat <> :etat')
                     ->setParameter('etat', 'Passée');
             }
@@ -101,4 +102,5 @@ class SortieRepository extends ServiceEntityRepository
         }
             return $listeSortie;
     }
+
 }

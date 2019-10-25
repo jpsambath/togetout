@@ -4,13 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Participant;
 use App\Entity\User;
+use App\Form\RegistrationFormType;
 use App\Security\SecurityAuthenticator;
+use Doctrine\Common\Persistence\ObjectManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class RegistrationController
@@ -22,66 +26,75 @@ class RegistrationController extends Controller
     /**
      * @Route("/register", name="app_register")
      * @param Request $request
+     * @param ValidatorInterface $validator
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @param GuardAuthenticatorHandler $guardHandler
      * @param SecurityAuthenticator $authenticator
+     * @param ObjectManager $objectManager
+     * @param LoggerInterface $logger
      * @return Response
      */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, GuardAuthenticatorHandler $guardHandler, SecurityAuthenticator $authenticator): Response
+    public function register(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder,
+                             GuardAuthenticatorHandler $guardHandler, SecurityAuthenticator $authenticator, ObjectManager $objectManager,
+                             LoggerInterface $logger)
     {
+        try {
+            if ($request->getContent() != null) {
+                $logger->info($request->getContent());
+                $participantRecu = $request->getContent();
+                $participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, 'App\Entity\Participant', 'json');
+                $validator->validate($participantRecu);
+            } else {
+                throw new \ErrorException("Aucune valeur recue !");
+            }
+            /*
+                       if (count($error) > 0) {
+                           throw new \ErrorException("Erreur lors de la validation !");
+                       }
+            */
 
-        /*
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // encode the plain password
-            $user->setPassword(
+            $participantRecu->setPassword(
                 $passwordEncoder->encodePassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
+                    $participantRecu,
+                    $participantRecu->getPlainPassword()
                 )
             );
 
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($user);
-            $entityManager->flush();
+            $logger->info($participantRecu->getPlainPassword());
+            $logger->info($participantRecu->getPassword());
 
-            // do anything else you need here, like send an email
+            $objectManager->persist($participantRecu);
+            $objectManager->flush();
 
-            return $guardHandler->authenticateUserAndHandleSuccess(
-                $user,
+            $tab['statut'] = "ok";
+            $tab['participant'] = $participantRecu;
+
+            $logger->info($tab['statut']);
+
+            /*return $guardHandler->authenticateUserAndHandleSuccess(
+                $participantRecu,
                 $request,
                 $authenticator,
                 'main' // firewall name in security.yaml
-            );
+            );*/
+
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "register";
+            $tab['action2'] = "test";
+            return $this->renvoiJSON($tab);
         }
+    }
 
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
-        */
+    private function renvoiJSON($data){
+        $dataJSON = $this->get('jms_serializer')->serialize($data, 'json');
 
-        $test = new Participant();
-        $test2 = new Participant();
+        $response = new Response($dataJSON);
+        $response->headers->set('Content-Type', 'application/json');
 
-        $test->setNom('ROY');
-        $test->setPrenom('Loïc');
-        $test->setEmail('loic.roy2019@campus-eni.fr');
-        $test->setUsername('username');
-        $test->setPassword('123456789/Test');
-
-        $test2->setNom('ROY2');
-        $test2->setPrenom('Loïc2');
-        $test2->setEmail('loic.roy2019@campus-eni.fr2');
-        $test2->setUsername('username2');
-        $test2->setPassword('123456789/Test2');
-
-        $tab['participants'][] = $test;
-        $tab['participants'][] = $test2;
-
-
-        return $this->json($tab);
+        return $response;
     }
 }

@@ -29,12 +29,11 @@ class LoicController extends Controller
     /**
      * @Route("/responseJSON")
      * @param Request $request
-     * @param LoggerInterface $logger
      * @param ValidatorInterface $validator
      * @param ObjectManager $objectManager
      * @return Response
      */
-    public function sendJSON(Request $request, LoggerInterface $logger, ValidatorInterface $validator, ObjectManager $objectManager)
+    public function sendJSON(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
     {
         try {
             if ($request->getContent() != null) {
@@ -49,6 +48,7 @@ class LoicController extends Controller
                 throw new \ErrorException("Erreur lors de la validation !");
             }
  */
+            $participantRecu->setPassword('123');
 
             $objectManager->persist($participantRecu);
             $objectManager->flush();
@@ -63,6 +63,7 @@ class LoicController extends Controller
 
         } finally {
             $tab['action'] = "sendJSON";
+            $tab['action2'] = "sendJSON";
             return $this->renvoiJSON($tab);
         }
     }

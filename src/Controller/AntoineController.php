@@ -94,7 +94,13 @@ class AntoineController extends Controller
         return $response;
     }
 
-    //composer require symfony/swiftmailer-bundle
+
+    /**
+     * @Route("/sendMailRecuperationMDP")
+     * @param \Swift_Mailer $mailer
+     * @param Request $request
+     * @return Response
+     */
     private function sendMailRecuperationMDP(\Swift_Mailer $mailer, Request $request)
     {
         $participant = json_decode($request->get("objetParticipant"));

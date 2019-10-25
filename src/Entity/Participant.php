@@ -165,7 +165,7 @@ class Participant implements UserInterface
     /**
      * @param string $prenom
      */
-    public function setPrenom(string $prenom): void
+    public function setPrenom(?string $prenom): void
     {
         $this->prenom = $prenom;
     }
@@ -194,18 +194,11 @@ class Participant implements UserInterface
         return $this->roles;
     }
 
-    /**
-     * @param array $roles
-     */
-    public function setRoles(array $roles): void
-    {
-        $this->roles = $roles;
-    }
 
     /**
      * @return string
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -228,10 +221,12 @@ class Participant implements UserInterface
 
     /**
      * @param string $plainPassword
+     * @return Participant
      */
-    public function setPlainPassword(string $plainPassword): void
+    public function setPlainPassword(string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
+        return  $this ;
     }
 
     /**
@@ -261,7 +256,7 @@ class Participant implements UserInterface
     /**
      * @param string $telephone
      */
-    public function setTelephone(string $telephone): void
+    public function setTelephone(?string $telephone): void
     {
         $this->telephone = $telephone;
     }
@@ -297,7 +292,6 @@ class Participant implements UserInterface
     {
         $this->actif = $actif;
     }
-
 
 
     /**
@@ -385,5 +379,11 @@ class Participant implements UserInterface
 
         return $this;
     }
+
+    public function __toString()
+    {
+        return "Identifiant : ".$this->getId().", Username : ".$this->getUsername().", plainPassword : ".$this->getPlainPassword() ;
+    }
+
 
 }

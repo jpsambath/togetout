@@ -3,8 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Participant;
-use App\Entity\User;
-use App\Form\RegistrationFormType;
 use App\Security\SecurityAuthenticator;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerInterface;
@@ -14,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -32,18 +31,23 @@ class RegistrationController extends Controller
      * @param SecurityAuthenticator $authenticator
      * @param ObjectManager $objectManager
      * @param LoggerInterface $logger
+     * @param SerializerInterface $serializer
      * @return Response
      */
     public function register(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder,
                              GuardAuthenticatorHandler $guardHandler, SecurityAuthenticator $authenticator, ObjectManager $objectManager,
-                             LoggerInterface $logger)
+                             LoggerInterface $logger, SerializerInterface $serializer)
     {
         try {
             if ($request->getContent() != null) {
                 $logger->info($request->getContent());
                 $participantRecu = $request->getContent();
-                $participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, 'App\Entity\Participant', 'json');
-                $validator->validate($participantRecu);
+                //$participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, Participant::class, 'json');
+
+                $participantRecu = $serializer->deserialize($participantRecu, Participant::class, 'json');
+                $logger->info($participantRecu);
+                //$validator->validate($participantRecu);
+
             } else {
                 throw new \ErrorException("Aucune valeur recue !");
             }
@@ -52,19 +56,19 @@ class RegistrationController extends Controller
                            throw new \ErrorException("Erreur lors de la validation !");
                        }
             */
+            //$plainPassword = $participantRecu->getPlainPassword() ;
+            //$logger->info("Mot de passe non-hashé : ".$plainPassword);
+            //$encoded = $passwordEncoder->encodePassword($participantRecu, $plainPassword) ;
+            //$logger->info("Mot de passe hashé : ".$encoded);
+            //$participantRecu->setPassword($encoded) ;
 
-            $participantRecu->setPassword(
-                $passwordEncoder->encodePassword(
-                    $participantRecu,
-                    $participantRecu->getPlainPassword()
-                )
-            );
-
+            //$participantRecu->setPassword($passwordEncoder->encodePassword($participantRecu, $participantRecu->getPlainPassword()));
+            /*
             $logger->info($participantRecu->getPlainPassword());
             $logger->info($participantRecu->getPassword());
 
-            $objectManager->persist($participantRecu);
-            $objectManager->flush();
+            //$objectManager->persist($participantRecu);
+            //$objectManager->flush();*/
 
             $tab['statut'] = "ok";
             $tab['participant'] = $participantRecu;
@@ -84,7 +88,8 @@ class RegistrationController extends Controller
 
         } finally {
             $tab['action'] = "register";
-            $tab['action2'] = "test";
+            $tab['action2'] = "bouhbouh Loïc !";
+            $tab['action6'] = "Davidouhbouhboubou" ;
             return $this->renvoiJSON($tab);
         }
     }

@@ -16,8 +16,8 @@ security:
         main:
             anonymous: true
             guard:
-                authenticators:
-                    - App\Security\SecurityAuthenticator
+                          authenticators:
+                              - App\Security\SecurityAuthenticator
             logout:
                 path: app_logout
                 # where to redirect after logout

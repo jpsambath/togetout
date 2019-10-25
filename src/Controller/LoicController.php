@@ -2,12 +2,13 @@
 
 namespace App\Controller;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use App\Entity\Participant;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -30,49 +31,47 @@ class LoicController extends Controller
      * @Route("/responseJSON")
      * @param Request $request
      * @param ValidatorInterface $validator
-     * @param ObjectManager $objectManager
+     * @param LoggerInterface $logger
+     * @param Serializer $serializer
      * @return Response
      */
-    public function sendJSON(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
+    public function sendJSON(Request $request, ValidatorInterface $validator, LoggerInterface $logger, SerializerInterface $serializer)
     {
-        try {
-            if ($request->getContent() != null) {
-                $participantRecu = $request->getContent();
-                $participantRecu = $this->get('jms_serializer')->deserialize($participantRecu, 'App\Entity\Participant', 'json');
-                $validator->validate($participantRecu);
-            } else {
-                throw new \ErrorException("Aucune valeur recue !");
-            }
- /*
-            if (count($error) > 0) {
-                throw new \ErrorException("Erreur lors de la validation !");
-            }
- */
-            $participantRecu->setPassword('123');
+        $logger->info("T'arrive sur l'API");
+        $tab = [];
+        if ($request->getContent() != null) {
+            $participantRecu = $request->getContent();
 
-            $objectManager->persist($participantRecu);
-            $objectManager->flush();
+            $tab["participantRecu"] = $participantRecu;
 
-            $tab['statut'] = "ok";
-            $tab['participant'] = $participantRecu;
+            //version PLUG IN
+            //$participantDeserialiser = $this->get('jms_serializer')->deserialize($participantRecu, Participant::class, 'json');
 
+            //version NATIF
+            $participantDeserialiser = $serializer->deserialize($participantRecu, Participant::class, 'json');
 
-        } catch (\Exception $e) {
-            $tab['statut'] = "erreur";
-            $tab['messageErreur'] = $e->getMessage();
+            //$validator->validate($participantDeserialiser);
 
-        } finally {
-            $tab['action'] = "sendJSON";
-            $tab['action2'] = "sendJSON";
-            return $this->renvoiJSON($tab);
+            $tab["participantDeserialiser"] = $participantDeserialiser;
+
+            //version NATIF
+            return $serializer->serialize($tab, 'json');
         }
+
+        //version PLUG IN
+        //return $this->renvoiJSON($tab, $logger);
+
     }
 
-   private function renvoiJSON($data){
+   private function renvoiJSON($data, $logger){
        $dataJSON = $this->get('jms_serializer')->serialize($data, 'json');
+
+       $logger->info($dataJSON);
 
        $response = new Response($dataJSON);
        $response->headers->set('Content-Type', 'application/json');
+
+       $logger->info("Tu repars de l'API");
 
        return $response;
    }

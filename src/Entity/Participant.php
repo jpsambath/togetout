@@ -63,10 +63,16 @@ class Participant implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string", length=180)
      * @Assert\Length(max="180")
+     */
+    private $password;
+
+    /**
+     * @var string The not-hashed password
+     * @Assert\Length(max="180")
      * @Assert\NotBlank()
      * @Serializer\Expose
      */
-    private $password;
+    private $plainPassword;
 
     /**
      * @var string
@@ -210,6 +216,22 @@ class Participant implements UserInterface
     public function setPassword(string $password): void
     {
         $this->password = $password;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPlainPassword(): string
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param string $plainPassword
+     */
+    public function setPlainPassword(string $plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
     }
 
     /**

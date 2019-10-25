@@ -154,34 +154,6 @@ class DavidController extends Controller
     }
 
     /**
-     * @Route("/desactiverUtilisateur", name="desactiverUtilisateur")
-     * @param Participant $participant
-     * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param ObjectManager $objectManager
-     * @return JsonResponse
-     * @throws ErrorException
-     */
-    public function desactiverUtilisateur(Participant $participant, Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
-    {
-        if ($request->getContent() != null) {
-            $listeChangementEtat = $request->getContent();
-            $listeChangementEtat = $this->get('jms_serializer')->deserialize($listeChangementEtat, 'App\Entity\Participant', 'json');
-            $error = $validator->validate($listeChangementEtat);
-        } else {
-            throw new ErrorException("Aucune valeur recue !");
-        }
-
-        if ($participant->isAdministrateur() === true && $listeChangementEtat === null) {
-            foreach ($listeChangementEtat as $participant) {
-                $objectManager->persist($participant);
-                $objectManager->flush();
-            }
-        }
-        return $this->json("Utilisateur désactivé !");
-    }
-
-    /**
      * @Route("/supprimerUtilisateur", name="supprimerUtilisateur")
      * @param Participant $participant
      * @param Request $request

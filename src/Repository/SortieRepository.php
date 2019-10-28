@@ -2,12 +2,14 @@
 
 namespace App\Repository;
 
+use App\DBAL\Types\EtatEnumType;
 use App\Entity\Participant;
 use App\Entity\Sortie;
 use DateInterval as DateIntervalAlias;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
+use function Sodium\add;
 
 /**
  * @method Sortie|null find($id, $lockMode = null, $lockVersion = null)
@@ -106,6 +108,53 @@ class SortieRepository extends ServiceEntityRepository
             }
         }
             return $listeSortie;
+    }
+
+
+    public function loadSixProchaineSortiesInscritUtilisateur(Participant $participant)
+    {
+
+        return $this->createQueryBuilder('s')
+            ->andWhere(':val MEMBER OF s.participants')
+            ->setParameter('val', $participant)
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->orderBy('s.dateHeureDebut', 'DESC')
+            ->setMaxResults(6)->getQuery()->getResult();
+
+    }
+
+    public function loadSixProchaineSortiesProposeUtilisateur(Participant $participant)
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere(':val MEMBER OF s.organisateur')
+            ->setParameter('val', $participant)
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->orderBy('s.dateHeureDebut', 'DESC')
+            ->setMaxResults(6)->getQuery()->getResult();
+    }
+    public function sixProchaineSortie()
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->orWhere('s.etat = :etat2')
+            ->setParameter('etat2', EtatEnumType::CLOTUREE)
+            ->orderBy('s.dateHeureDebut', 'DESC')
+            ->setMaxResults(6)->getQuery()->getResult();
+    }
+
+    public function sixProchainesSortiesSemaineSuivante()
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->orWhere('s.etat = :etat2')
+            ->setParameter('etat2', EtatEnumType::CLOTUREE)
+            ->andWhere('s.dateHeureDebut'>= date()."+ 1 week")
+            ->orderBy('s.dateHeureDebut', 'DESC')
+            ->setMaxResults(6)->getQuery()->getResult();
     }
 
 }

@@ -73,6 +73,7 @@ class PostControllerTest extends WebTestCase
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $user1 = json_decode($client->getResponse()->getContent(), true);
 
+            var_dump($user1);
         $this->assertEquals(true, $user1["actif"]);
 
     }

@@ -33,6 +33,7 @@ class SortieRepository extends ServiceEntityRepository
      * @param $dateDebut
      * @param $dateFin
      * @return Sortie[] Returns an array of Sortie objects
+     * @throws Exception
      */
     public function findSortie($idSite,$organisateur,$inscrit,$pasInscrit,$sortiePassee,$texteRecherche,$idParticipant,$dateDebut,$dateFin)
     {

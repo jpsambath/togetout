@@ -24,16 +24,26 @@ class Site
      */
     private $nom;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getNom(): ?string
     {
         return $this->nom;
     }
 
+    /**
+     * @param string $nom
+     * @return $this
+     */
     public function setNom(string $nom): self
     {
         $this->nom = $nom;

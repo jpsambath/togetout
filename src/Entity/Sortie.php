@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Cassandra\Date;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -94,6 +95,11 @@ class Sortie
     private $lieu;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\GroupePrive", inversedBy="sorties")
+     */
+    private $groupePrive;
+
+    /**
      * Sortie constructor.
      */
     public function __construct()
@@ -102,6 +108,9 @@ class Sortie
     }
 
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
@@ -209,7 +218,7 @@ class Sortie
      */
     public function inscriptionCloturee(Sortie $sortie)
     {
-            $this->getEtat()->setLibelle() == EtatEnumType::CLOTUREE;
+            $this->getEtat()->setLibelle(EtatEnumType::CLOTUREE);
     }
 
 
@@ -222,9 +231,14 @@ class Sortie
         return $this->participants;
     }
 
+    /**
+     * @param Participant $participant
+     * @return $this
+     * @throws ErrorException
+     */
     public function addParticipant(Participant $participant): self
     {
-        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getInscrit()->count() < $this->getNbInscriptionMax()){
+        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getParticipants()->count() < $this->getNbInscriptionMax()){
             if (!$this->participants->contains($participant)) {
                 $this->participants[] = $participant;
                 $participant->addSorty($this);
@@ -237,27 +251,39 @@ class Sortie
         return $this;
     }
 
+    /**
+     * @param Participant $participant
+     * @return $this
+     * @throws ErrorException
+     */
     public function removeParticipant(Participant $participant): self
     {
-        if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE && $this->getDateLimiteInscription() > (new \DateTime())) ){
+        if(($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE) && $this->getDateLimiteInscription() > (new \DateTime())) ){
             if ($this->participants->contains($participant)) {
                 $this->participants->removeElement($participant);
                 $participant->removeSorty($this);
             } else {
                 throw new ErrorException('Ce candidat n\'est pas inscrit !');
             }
-        } else  {
+        } else {
             throw new ErrorException('il n\'est plus possible de ce désinscrire !');
         }
-
         return $this;
     }
 
+
+    /**
+     * @return Participant|null
+     */
     public function getOrganisateur(): ?Participant
     {
         return $this->organisateur;
     }
 
+    /**
+     * @param Participant|null $organisateur
+     * @return $this
+     */
     public function setOrganisateur(?Participant $organisateur): self
     {
         $this->organisateur = $organisateur;
@@ -265,11 +291,18 @@ class Sortie
         return $this;
     }
 
+    /**
+     * @return Etat|null
+     */
     public function getEtat(): ?Etat
     {
         return $this->etat;
     }
 
+    /**
+     * @param Etat|null $etat
+     * @return $this
+     */
     public function setEtat(?Etat $etat): self
     {
         $this->etat = $etat;
@@ -277,11 +310,18 @@ class Sortie
         return $this;
     }
 
+    /**
+     * @return Site|null
+     */
     public function getSite(): ?Site
     {
         return $this->site;
     }
 
+    /**
+     * @param Site|null $site
+     * @return $this
+     */
     public function setSite(?Site $site): self
     {
         $this->site = $site;
@@ -289,14 +329,33 @@ class Sortie
         return $this;
     }
 
+    /**
+     * @return Lieu|null
+     */
     public function getLieu(): ?Lieu
     {
         return $this->lieu;
     }
 
+    /**
+     * @param Lieu|null $lieu
+     * @return $this
+     */
     public function setLieu(?Lieu $lieu): self
     {
         $this->lieu = $lieu;
+
+        return $this;
+    }
+
+    public function getGroupePrive(): ?GroupePrive
+    {
+        return $this->groupePrive;
+    }
+
+    public function setGroupePrive(?GroupePrive $groupePrive): self
+    {
+        $this->groupePrive = $groupePrive;
 
         return $this;
     }

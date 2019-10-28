@@ -6,7 +6,6 @@ use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Entity\Sortie;
 use App\Repository\SortieRepository;
-use App\Repository\UserRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
@@ -234,20 +233,19 @@ class SortieController extends Controller
         try{
             $participant = ManagerJSON::test($this->getUser(), $objectManager);
 
-            $tab['sortiesInscrits'] = $repository->loadSixProchaineSortiesInscritUtilisateur($participant);
-            $tab['sortiesOrganisateurs'] = $repository->loadSixProchaineSortiesProposeUtilisateur($participant);
+            $tab['sortiesInscrits'] = $repository->loadSixProchaineSortiesInscritUtilisateur($participant[0]);
+            $tab['sortiesOrganisateurs'] = $repository->loadSixProchaineSortiesProposeUtilisateur($participant[0]);
             $tab['sortiesSemaineActuelle'] = $repository->sixProchaineSortie();
             $tab['sortiesSemaineProchaine'] = $repository->sixProchainesSortiesSemaineSuivante();
 
             $tab['statut'] = "ok";
-            $tab['messageOk'] = "Update successfull";
 
         } catch (Exception $e) {
             $tab['statut'] = "erreur";
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "accueil";
+            $tab['action'] = "getSortieInfo";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }

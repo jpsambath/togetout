@@ -14,6 +14,12 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+
+/**
+ * Class VilleController
+ * @package App\Controller
+ *  * @Route("/api" , name="")
+ */
 class VilleController extends Controller
 {
     /**
@@ -54,6 +60,7 @@ class VilleController extends Controller
     }
 
     /**
+     * @Route("/getVilles", name="getVilles")
      * @param VilleRepository $repository
      * @param Request $request
      * @param SerializerInterface $serializer

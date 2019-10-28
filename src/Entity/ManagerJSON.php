@@ -4,14 +4,14 @@
 namespace App\Entity;
 
 
+
 use App\Repository\UserRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 
 final class ManagerJSON
 {
@@ -42,12 +42,12 @@ final class ManagerJSON
     }
 
     /**
-     * @param Participant $user
+     * @param $user
      * @param ObjectManager $objectManager
-     * @return UserRepository[]|object[]
+     * @return Participant[]|UserRepository[]|object[]
      */
-    public static function test(Participant $user, ObjectManager $objectManager)
+    public static function test($user, ObjectManager $objectManager)
     {
-        return $objectManager->getRepository(UserRepository::class)->findBy(["username" => $user->getUsername()]);
+        return $objectManager->getRepository(Participant::class)->findBy(["username" => $user->getUsername()]);
     }
 }

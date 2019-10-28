@@ -9,7 +9,6 @@ use DateInterval as DateIntervalAlias;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
-use function Sodium\add;
 
 /**
  * @method Sortie|null find($id, $lockMode = null, $lockVersion = null)
@@ -127,7 +126,8 @@ class SortieRepository extends ServiceEntityRepository
     public function loadSixProchaineSortiesProposeUtilisateur(Participant $participant)
     {
         return $this->createQueryBuilder('s')
-            ->andWhere(':val MEMBER OF s.organisateur')
+            //->andWhere(':val MEMBER OF s.organisateur')
+            ->andWhere('s.organisateur = :val')
             ->setParameter('val', $participant)
             ->andWhere('s.etat = :etat')
             ->setParameter('etat', EtatEnumType::OUVERTE)
@@ -148,11 +148,11 @@ class SortieRepository extends ServiceEntityRepository
     public function sixProchainesSortiesSemaineSuivante()
     {
         return $this->createQueryBuilder('s')
-            ->andWhere('s.etat = :etat')
+            //->andWhere('s.dateHeureDebut'>= date("d/m/Y")."+ 1 week")
+            ->andWhere('s.etat = :etat OR s.etat = :etat2')
             ->setParameter('etat', EtatEnumType::OUVERTE)
-            ->orWhere('s.etat = :etat2')
+            //->orWhere('s.etat = :etat2')
             ->setParameter('etat2', EtatEnumType::CLOTUREE)
-            ->andWhere('s.dateHeureDebut'>= date()."+ 1 week")
             ->orderBy('s.dateHeureDebut', 'DESC')
             ->setMaxResults(6)->getQuery()->getResult();
     }

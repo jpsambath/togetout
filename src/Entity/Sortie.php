@@ -40,7 +40,7 @@ class Sortie
 
     /**
      * @var DateTime
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="time")
      * @Assert\NotBlank()
      */
     private $duree;
@@ -163,6 +163,7 @@ class Sortie
     {
         $this->duree = $duree;
     }
+
 
     /**
      * @return DateTime

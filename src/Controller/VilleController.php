@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ManagerJSON;
 use App\Entity\Ville;
+use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -48,6 +49,30 @@ class VilleController extends Controller
 
         } finally {
             $tab['action'] = "ajoutVille";
+        }
+        return ManagerJSON::renvoiJSON($tab, $serializer);
+    }
+
+    /**
+     * @param VilleRepository $repository
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @return Response
+     */
+    public function recuperationVille(VilleRepository $repository, Request $request, SerializerInterface $serializer)
+    {
+        try {
+            ManagerJSON::testRecupJSON($request);
+
+            $tab['statut'] = "ok";
+            $tab['villes'] = $repository->findAll();
+
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "recuperationVille";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }

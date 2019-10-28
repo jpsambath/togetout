@@ -30,7 +30,6 @@ class LoicController extends Controller
      */
     public function test(Request $request, ValidatorInterface $validator, LoggerInterface $logger, SerializerInterface $serializer, UserRepository $repository)
     {
-        //ManagerJSON::testRecupJSON();
         $user = $repository->findBy(["username" => $this->getUser()->getUsername()]);
         $tab["participant"] = $user;
         $tab['test'] = 'test';

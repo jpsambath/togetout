@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Lieu;
 use App\Entity\ManagerJSON;
+use App\Repository\LieuRepository;
+use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -48,6 +50,30 @@ class LieuController extends Controller
 
         } finally {
             $tab['action'] = "ajoutLieu";
+        }
+        return ManagerJSON::renvoiJSON($tab, $serializer);
+    }
+
+    /**
+     * @param LieuRepository $repository
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @return Response
+     */
+    public function recuperationVille(LieuRepository $repository, Request $request, SerializerInterface $serializer)
+    {
+        try {
+            ManagerJSON::testRecupJSON($request);
+
+            $tab['statut'] = "ok";
+            $tab['lieux'] = $repository->findAll();
+
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "recuperationVille";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }

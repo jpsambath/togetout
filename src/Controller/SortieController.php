@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Entity\Sortie;
+use App\Repository\SortieRepository;
+use App\Repository\UserRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
@@ -18,7 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * Class SortieController
  * @package App\Controller
- * @Route("", name="")
+ * @Route("/api", name="")
  */
 class SortieController extends Controller
 {
@@ -220,4 +222,33 @@ class SortieController extends Controller
     }
 
 
+    /**
+     * @Route("/getSortieInfo", name="getSortieInfo")
+     * @param SortieRepository $repository
+     * @param SerializerInterface $serializer
+     * @param ObjectManager $objectManager
+     * @return Response
+     */
+    public function getSortieInfo(SortieRepository $repository, SerializerInterface $serializer, ObjectManager $objectManager)
+    {
+        try{
+            $participant = ManagerJSON::test($this->getUser(), $objectManager);
+
+            $tab['sortiesInscrits'] = $repository->loadSixProchaineSortiesInscritUtilisateur($participant);
+            $tab['sortiesOrganisateurs'] = $repository->loadSixProchaineSortiesProposeUtilisateur($participant);
+            $tab['sortiesSemaineActuelle'] = $repository->sixProchaineSortie();
+            $tab['sortiesSemaineProchaine'] = $repository->sixProchainesSortiesSemaineSuivante();
+
+            $tab['statut'] = "ok";
+            $tab['messageOk'] = "Update successfull";
+
+        } catch (Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "accueil";
+        }
+        return ManagerJSON::renvoiJSON($tab, $serializer);
+    }
 }

@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ManagerJSON;
-use App\Entity\Participant;
+use App\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,20 +15,24 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * Class LoicController
  * @package App\Controller
- * @Route("/test")
+ * @Route("/api")
  */
 class LoicController extends Controller
 {
     /**
-     * @Route("/responseJSON")
+     * @Route("/getUserInfo")
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param LoggerInterface $logger
      * @param SerializerInterface $serializer
+     * @param UserRepository $repository
      * @return Response
      */
-    public function sendJSON(Request $request, ValidatorInterface $validator, LoggerInterface $logger, SerializerInterface $serializer)
+    public function test(Request $request, ValidatorInterface $validator, LoggerInterface $logger, SerializerInterface $serializer, UserRepository $repository)
     {
+        //ManagerJSON::testRecupJSON();
+        $user = $repository->findBy(["username" => $this->getUser()->getUsername()]);
+        $tab["participant"] = $user;
         $tab['test'] = 'test';
         return ManagerJSON::renvoiJSON($tab, $serializer);
       //  }

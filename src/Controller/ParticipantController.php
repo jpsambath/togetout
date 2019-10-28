@@ -78,8 +78,6 @@ class ParticipantController extends Controller
     public function consulterProfil(Participant $participant, SerializerInterface $serializer, Request $request)
     {
         try {
-            ManagerJSON::testRecupJSON($request);
-
             $tab['statut'] = "ok";
             $tab['participant'] = $participant;
 

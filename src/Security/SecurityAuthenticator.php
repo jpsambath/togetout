@@ -69,6 +69,7 @@ class SecurityAuthenticator extends AbstractFormLoginAuthenticator
             throw new InvalidCsrfTokenException();
         }
 */
+        $this->logger->info('test');
         $this->logger->info($credentials['username']);
         $user = $this->entityManager->getRepository(Participant::class)->findByUsernameOrEmail(['username' => $credentials['username']]);
 

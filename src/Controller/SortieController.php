@@ -47,7 +47,7 @@ class SortieController extends Controller
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "modifierProfil";
+            $tab['action'] = "inscriptionSortie";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }
@@ -74,7 +74,7 @@ class SortieController extends Controller
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "modifierProfil";
+            $tab['action'] = "desistementSortie";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }
@@ -103,7 +103,7 @@ class SortieController extends Controller
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "modifierProfil";
+            $tab['action'] = "clotureInscrition";
         }
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }
@@ -130,14 +130,14 @@ class SortieController extends Controller
             $objectManager->flush();
 
             $tab['statut'] = "ok";
-            $tab["messageOk"] = "la suppression de la sortie a ete prise en compte !";
+            $tab["messageOk"] = "La sortie a ete annulee avec succes !";
 
         } catch (\Exception $e) {
             $tab['statut'] = "erreur";
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "modifierProfil";
+            $tab['action'] = "annulationSortie";
         }
 
         return ManagerJSON::renvoiJSON($tab, $serializer);

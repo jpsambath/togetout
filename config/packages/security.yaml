@@ -43,25 +43,25 @@ security:
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
- #       main:
- #           anonymous: true
- #           guard:
- #               authenticators:
- #                   - App\Security\SecurityAuthenticator
- #           provider: app_user_provider
- #           logout:
- #               path: app_logout
+        main:
+            anonymous: true
+            guard:
+                authenticators:
+                    - App\Security\SecurityAuthenticator
+            provider: app_user_provider
+            logout:
+                path: app_logout
                 # where to redirect after logout
                 # target: app_any_route
 
- #           remember_me:
-  #              secret: '%kernel.secret%'
-   #             lifetime: 604000
-   #             path: /
+#            remember_me:
+#                secret: '%kernel.secret%'
+#                lifetime: 604000
+#                path: /
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profile, roles: ROLE_USER }
-        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        #- { path: ^/admin, roles: ROLE_ADMIN }
+        #- { path: ^/profile, roles: ROLE_USER }
+        #- { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

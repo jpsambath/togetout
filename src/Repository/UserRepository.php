@@ -29,20 +29,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
      * @throws NonUniqueResultException
      */
 
-    public function findByUsernameOrEmail($value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.username = :val')
-            ->orWhere('p.email = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-
-
     /*
     public function findOneBySomeField($value): ?User
     {
@@ -54,6 +40,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         ;
     }
     */
+
     /**
      * Loads the user for the given username.
      *
@@ -62,9 +49,18 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
      * @param string $username The username
      *
      * @return UserInterface|null
+     * @throws NonUniqueResultException
      */
     public function loadUserByUsername($username)
     {
-        // TODO: Implement loadUserByUsername() method.
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.username = :val')
+            ->orWhere('p.email = :val')
+            ->setParameter('val', $username)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
     }
 }

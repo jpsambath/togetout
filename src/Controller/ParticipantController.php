@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use Doctrine\Common\Persistence\ObjectManager;
+use ErrorException;
+use Exception;
 use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -86,12 +88,87 @@ class ParticipantController extends Controller
                 $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "sendMailRecuperationMDP";
+            $tab['action'] = "consulterProfil";
         }
 
         return ManagerJSON::renvoiJSON($tab, $serializer);
     }
 
+    /**
+     * @Route("/supprimerUtilisateur", name="supprimerUtilisateur")
+     * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param ObjectManager $objectManager
+     * @param SerializerInterface $serializer
+     * @return Response
+     */
+    public function supprimerUtilisateur(Request $request, ValidatorInterface $validator, ObjectManager $objectManager, SerializerInterface $serializer)
+    {
+        try {
+            ManagerJSON::testRecupJSON($request);
+
+            if (!$this->getUser()->isAdministrateur()) {
+                throw new ErrorException("Acces reserver au administrateurs");
+            }
+
+            $listeIdRecue = $request->getContent();
+            $listeIdDeserialise =$serializer->deserialize($listeIdRecue, Participant::class, 'json');
+            $error = $validator->validate($listeIdDeserialise);
+
+            foreach ($listeIdDeserialise as $participant) {
+                $participant->setActif(false);
+                $objectManager->persist($participant);
+                $objectManager->flush();
+            }
+
+            $tab['statut'] = "ok";
+            $tab['messageOk'] = "Participant supprimer avec success !";
+
+        } catch (Exception $e) {
+            $tab['statut'] = 'erreur';
+            $tab['messageErreur'] = $e->getMessage();
+        } finally {
+            $tab['action'] = "supprimerUtilisateur";
+        }
+        return ManagerJSON::renvoiJSON($tab, $serializer);
+    }
+
+    /**
+     * @Route("/inscrireUtilisateur", name="sinscrireUtilisateur")
+     * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param ObjectManager $objectManager
+     * @param SerializerInterface $serializer
+     * @return Response
+     */
+    public function inscrireManuellementUtilisateur (Request $request, ValidatorInterface $validator, ObjectManager $objectManager, SerializerInterface $serializer)
+    {
+        try{
+            ManagerJSON::testRecupJSON($request);
+
+            if (!$this->getUser()->isAdministrateur()){
+                throw new ErrorException("Acces reserver au administrateurs");
+            }
+
+            $utilisateurRecue = $request->getContent();
+            $utilisateurDeserialise = $serializer->deserialize($utilisateurRecue, 'App\Entity\Participant', 'json');
+            $error = $validator->validate($utilisateurDeserialise);
+
+            $objectManager->persist($utilisateurDeserialise);
+            $objectManager->flush();
+
+            $tab['statut'] = "ok";
+            $tab['messageOk'] = "Participant inscrit avec success !";
+
+        } catch (Exception $e) {
+            $tab['statut'] = 'erreur';
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "inscrireManuellementUtilisateur";
+        }
+        return ManagerJSON::renvoiJSON($tab, $serializer);
+    }
 
     /*-----------------------------------ANTOINE----------------------------------*/
     /**

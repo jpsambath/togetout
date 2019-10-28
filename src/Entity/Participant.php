@@ -143,7 +143,6 @@ class Participant implements UserInterface
         $this->actif = true;
         $this->administrateur = false;
         $this->roles[] = "ROLE_USER";
-        $this->groupePrives = new ArrayCollection();
         $this->groupePrivesInscrit = new ArrayCollection();
         $this->groupePrivesFondateur = new ArrayCollection();
     }

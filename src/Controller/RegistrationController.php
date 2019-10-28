@@ -50,7 +50,7 @@ class RegistrationController extends Controller
             $objectManager->flush();
 
             $tab['statut'] = "ok";
-            $tab['messageOk'] = "Inscription successfull";
+            $tab['messageOk'] = "Inscription réussie";
 
 
             /*return $guardHandler->authenticateUserAndHandleSuccess(

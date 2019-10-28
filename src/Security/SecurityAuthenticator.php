@@ -2,8 +2,10 @@
 
 namespace App\Security;
 
+use App\Entity\Participant;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -27,13 +29,15 @@ class SecurityAuthenticator extends AbstractFormLoginAuthenticator
     private $urlGenerator;
     private $csrfTokenManager;
     private $passwordEncoder;
+    private $logger;
 
-    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->urlGenerator = $urlGenerator;
         $this->csrfTokenManager = $csrfTokenManager;
         $this->passwordEncoder = $passwordEncoder;
+        $this->logger = $logger;
     }
 
     public function supports(Request $request)
@@ -47,7 +51,7 @@ class SecurityAuthenticator extends AbstractFormLoginAuthenticator
         $credentials = [
             'username' => $request->request->get('username'),
             'password' => $request->request->get('password'),
-            'csrf_token' => $request->request->get('_csrf_token'),
+            //'csrf_token' => $request->request->get('_csrf_token'),
         ];
         $request->getSession()->set(
             Security::LAST_USERNAME,
@@ -59,12 +63,15 @@ class SecurityAuthenticator extends AbstractFormLoginAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
+        /*
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
         if (!$this->csrfTokenManager->isTokenValid($token)) {
             throw new InvalidCsrfTokenException();
         }
-
-        $user = $this->entityManager->getRepository(User::class)->findByUsernameOrEmail(['username' => $credentials['username']]);
+*/
+        $this->logger->info('test');
+        $this->logger->info($credentials['username']);
+        $user = $this->entityManager->getRepository(Participant::class)->findByUsernameOrEmail(['username' => $credentials['username']]);
 
         if (!$user) {
             // fail authentication with a custom error

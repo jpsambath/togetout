@@ -141,11 +141,18 @@ class Lieu
         return $this;
     }
 
+    /**
+     * @return Ville|null
+     */
     public function getVille(): ?Ville
     {
         return $this->ville;
     }
 
+    /**
+     * @param Ville|null $ville
+     * @return $this
+     */
     public function setVille(?Ville $ville): self
     {
         $this->ville = $ville;

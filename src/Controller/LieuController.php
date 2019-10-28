@@ -2,36 +2,34 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Lieu;
 use App\Entity\ManagerJSON;
-use App\Entity\Participant;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class DavidController extends Controller
+class LieuController extends Controller
 {
-
     /**
-     * @Route("/recuperationJsonSortie" , name="recuperationJasonSortie")
+     * @Route("/ajoutLieu" , name="ajoutLieu")
+     * @param ObjectManager $objectManager
      * @param Request $request
      * @param ValidatorInterface $validator
-     * @param ObjectManager $objectManager
-     * @return JsonResponse
+     * @param SerializerInterface $serializer
+     * @return Response
      */
-    public function recuperationSortieJson(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
+    public function ajoutLieu(ObjectManager $objectManager, Request $request, ValidatorInterface $validator, SerializerInterface $serializer)
     {
         try {
+            ManagerJSON::testRecupJSON($request);
+
             $lieuRecu = $request->getContent();
-            $lieuDeserialise = $this->get('jms_serializer')->deserialize($lieuRecu, Lieu::class, 'json');
+            $lieuDeserialise = $serializer->deserialize($lieuRecu, Lieu::class, 'json');
             $error = $validator->validate($lieuDeserialise);
 
             if (count($error) > 0) {
@@ -42,19 +40,15 @@ class DavidController extends Controller
             $objectManager->flush();
 
             $tab['statut'] = "ok";
-            $tab['messageOk'] = "Lieu creer avec success !";
-            $tab['lieuRecu'] = $lieuDeserialise;
-        } catch (Exception $e) {
+            $tab['villeDeserialise'] = $lieuDeserialise;
 
-            $tab['statut'] = 'erreur';
-            $tab['lieuNonRecu'] = 'le lieu n\'à pas été transmit correctement';
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "ajoutLieu";
         }
-        return $this->json("Donné recupéré !");
+        return ManagerJSON::renvoiJSON($tab, $serializer);
     }
-
-
-
-
 }
-
-

@@ -7,6 +7,8 @@ use App\Entity\Participant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method Participant|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,7 +16,7 @@ use Doctrine\ORM\NonUniqueResultException;
  * @method Participant[]    findAll()
  * @method Participant[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -27,20 +29,6 @@ class UserRepository extends ServiceEntityRepository
      * @throws NonUniqueResultException
      */
 
-    public function findByUsernameOrEmail($value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.username = :val')
-            ->orWhere('p.email = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-
-
     /*
     public function findOneBySomeField($value): ?User
     {
@@ -52,4 +40,27 @@ class UserRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * Loads the user for the given username.
+     *
+     * This method must return null if the user is not found.
+     *
+     * @param string $username The username
+     *
+     * @return UserInterface|null
+     * @throws NonUniqueResultException
+     */
+    public function loadUserByUsername($username)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.username = :val')
+            ->orWhere('p.email = :val')
+            ->setParameter('val', $username)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
 }

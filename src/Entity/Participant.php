@@ -122,8 +122,20 @@ class Participant implements UserInterface
     private $site;
 
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\GroupePrive", mappedBy="membres")
+     */
+    private $groupePrivesInscrit;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\GroupePrive", mappedBy="fondateur")
+     */
+    private $groupePrivesFondateur;
 
 
+    /**
+     * Participant constructor.
+     */
     public function __construct()
     {
         $this->sorties = new ArrayCollection();
@@ -131,10 +143,14 @@ class Participant implements UserInterface
         $this->actif = true;
         $this->administrateur = false;
         $this->roles[] = "ROLE_USER";
+        $this->groupePrivesInscrit = new ArrayCollection();
+        $this->groupePrivesFondateur = new ArrayCollection();
     }
 
 
-
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
@@ -167,7 +183,7 @@ class Participant implements UserInterface
     /**
      * @param string $prenom
      */
-    public function setPrenom(string $prenom): void
+    public function setPrenom(?string $prenom): void
     {
         $this->prenom = $prenom;
     }
@@ -196,18 +212,11 @@ class Participant implements UserInterface
         return $this->roles;
     }
 
-    /**
-     * @param array $roles
-     */
-    public function setRoles(array $roles): void
-    {
-        $this->roles = $roles;
-    }
 
     /**
      * @return string
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -230,10 +239,12 @@ class Participant implements UserInterface
 
     /**
      * @param string $plainPassword
+     * @return Participant
      */
-    public function setPlainPassword(string $plainPassword): void
+    public function setPlainPassword(string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
+        return  $this ;
     }
 
     /**
@@ -263,7 +274,7 @@ class Participant implements UserInterface
     /**
      * @param string $telephone
      */
-    public function setTelephone(string $telephone): void
+    public function setTelephone(?string $telephone): void
     {
         $this->telephone = $telephone;
     }
@@ -301,7 +312,6 @@ class Participant implements UserInterface
     }
 
 
-
     /**
      * @see UserInterface
      */
@@ -327,6 +337,10 @@ class Participant implements UserInterface
         return $this->sorties;
     }
 
+    /**
+     * @param Sortie $sortie
+     * @return $this
+     */
     public function addSorty(Sortie $sortie): self
     {
         if (!$this->sorties->contains($sortie)) {
@@ -336,6 +350,10 @@ class Participant implements UserInterface
         return $this;
     }
 
+    /**
+     * @param Sortie $sortie
+     * @return $this
+     */
     public function removeSorty(Sortie $sortie): self
     {
         if ($this->sorties->contains($sortie)) {
@@ -353,16 +371,27 @@ class Participant implements UserInterface
         return $this->sortieCreer;
     }
 
+    /**
+     * @param Sortie $sortieCreer
+     * @return $this
+     */
     public function addSortieCreer(Sortie $sortieCreer): self
     {
         if (!$this->sortieCreer->contains($sortieCreer)) {
             $this->sortieCreer[] = $sortieCreer;
             $sortieCreer->setOrganisateur($this);
+
+            //Inscription automatique à la sortie
+            $this->addSorty($sortieCreer);
         }
 
         return $this;
     }
 
+    /**
+     * @param Sortie $sortieCreer
+     * @return $this
+     */
     public function removeSortieCreer(Sortie $sortieCreer): self
     {
         if ($this->sortieCreer->contains($sortieCreer)) {
@@ -376,16 +405,109 @@ class Participant implements UserInterface
         return $this;
     }
 
+    /**
+     * @return Site|null
+     */
     public function getSite(): ?Site
     {
         return $this->site;
     }
 
+    /**
+     * @param Site|null $site
+     * @return $this
+     */
     public function setSite(?Site $site): self
     {
         $this->site = $site;
 
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return "Identifiant : ".$this->getId().", Username : ".$this->getUsername().", plainPassword : ".$this->getPlainPassword() ;
+    }
+
+
+    /**
+     * @return Collection|GroupePrive[]
+     */
+    public function getGroupePrivesInscrit(): Collection
+    {
+        return $this->groupePrivesInscrit;
+    }
+
+    /**
+     * @param GroupePrive $groupePrivesInscrit
+     * @return $this
+     */
+    public function addGroupePrivesInscrit(GroupePrive $groupePrivesInscrit): self
+    {
+        if (!$this->groupePrivesInscrit->contains($groupePrivesInscrit)) {
+            $this->groupePrivesInscrit[] = $groupePrivesInscrit;
+            $groupePrivesInscrit->addMembre($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param GroupePrive $groupePrivesInscrit
+     * @return $this
+     */
+    public function removeGroupePrivesInscrit(GroupePrive $groupePrivesInscrit): self
+    {
+        if ($this->groupePrivesInscrit->contains($groupePrivesInscrit)) {
+            $this->groupePrivesInscrit->removeElement($groupePrivesInscrit);
+            $groupePrivesInscrit->removeMembre($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|GroupePrive[]
+     */
+    public function getGroupePrivesFondateur(): Collection
+    {
+        return $this->groupePrivesFondateur;
+    }
+
+    /**
+     * @param GroupePrive $groupePrivesFondateur
+     * @return $this
+     */
+    public function addGroupePrivesFondateur(GroupePrive $groupePrivesFondateur): self
+    {
+        if (!$this->groupePrivesFondateur->contains($groupePrivesFondateur)) {
+            $this->groupePrivesFondateur[] = $groupePrivesFondateur;
+            $groupePrivesFondateur->setFondateur($this);
+
+            //Membre automatique du groupe
+            $this->addGroupePrivesInscrit($groupePrivesFondateur);
+        }
+
+        return $this;
+    }
+
+    /*
+    public function removeGroupePrivesFondateur(GroupePrive $groupePrivesFondateur): self
+    {
+        if ($this->groupePrivesFondateur->contains($groupePrivesFondateur)) {
+            $this->groupePrivesFondateur->removeElement($groupePrivesFondateur);
+            // set the owning side to null (unless already changed)
+            if ($groupePrivesFondateur->getFondateur() === $this) {
+                $groupePrivesFondateur->setFondateur(null);
+            }
+        }
+
+        return $this;
+    }
+    */
+
 
 }

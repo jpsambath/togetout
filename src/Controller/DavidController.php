@@ -30,7 +30,7 @@ class DavidController extends Controller
 
 
     /**
-     * @Route("/clotureInscription", name="clotureInscription")
+     * @Route("/clotureInscription/{id}", name="clotureInscription")
      * @param Sortie $sortie
      * @throws \Exception
      */
@@ -42,7 +42,7 @@ class DavidController extends Controller
     }
 
     /**
-     * @Route("/annulerSorite/{id}", name="annulertSortie")
+     * @Route("/annulerSortie/{id}", name="annulertSortie")
      * @param Sortie $sortieAnnule
      * @param ObjectManager $objectManager
      * @param Participant $participant
@@ -182,7 +182,7 @@ class DavidController extends Controller
     }
 
     /**
-     * @Route("/inscrireUtilisateur", name="sinscrireUtilisateur")
+     * @Route("/inscrireUtilisateur/{id}", name="sinscrireUtilisateur")
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param Participant $participant
@@ -227,6 +227,11 @@ class DavidController extends Controller
             throw new ErrorException("Aucune valeur recue !");
         }
 
+
+    }
+
+    public function chargerPhoto()
+    {
 
     }
 

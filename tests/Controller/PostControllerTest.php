@@ -10,26 +10,35 @@ class PostControllerTest extends WebTestCase
 
 
 
-    public function testInscrireManuellementUtilisateur()
+    /*public function testInscrireManuellementUtilisateur()
     {
-        $user = static::createClient();
+        $client = self::createClient();
+        $client->request(
+            'POST',
+            '/inscrireUtilisateur/17',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"name":"yo"}'
+        );
 
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals("utilisateur inscrit!", $response);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $clientdeserialiser = json_decode($client->getResponse()->getContent(), true);
 
-        $this->assertEquals(200, $user->getResponse()->getStatusCode());
-        $user1 = json_decode($user->getResponse()->getContent(), true);
-
-
-        $this->assertNotNull("nom");
-        /*$this->assertNotNull("username");
-        $this->assertNotNull("email");
-        $this->assertNotNull("password");*/
-
-    }
+    }*/
 
     /*public function testClotureInscrition()
     {
-        $client = static::createClient();
-        $crawler = $client->request('GET', '/clotureInscription');
+        $client = self::createClient();
+        $crawler = $client->request(
+            'POST',
+            clotureInscription/1,
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json']
+        );
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $inscription = json_decode($client->getResponse()->getContent(), true);
@@ -41,16 +50,22 @@ class PostControllerTest extends WebTestCase
     /*public function testAnnulationSortie()
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/clotureInscription');
+        $crawler = $client->request(
+            'POST',
+            'annulerSortie/1',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"name":"yo"}'
+
+
+        );
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $inscription = json_decode($client->getResponse()->getContent(), true);
-
-
-
     }*/
 
-    /*public function testConsulterProfil()
+    public function testConsulterProfil()
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/consulterProfil/17');
@@ -60,7 +75,7 @@ class PostControllerTest extends WebTestCase
 
         $this->assertEquals(true, $user1["actif"]);
 
-    }*/
+    }
 
 
     /*public function testAjoutLieu()

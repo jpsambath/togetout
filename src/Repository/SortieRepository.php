@@ -149,9 +149,9 @@ class SortieRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('s')
             //->andWhere('s.dateHeureDebut'>= date("d/m/Y")."+ 1 week")
-            ->andWhere('s.etat = :etat OR s.etat = :etat2')
+            ->andWhere('s.etat = :etat')
             ->setParameter('etat', EtatEnumType::OUVERTE)
-            //->orWhere('s.etat = :etat2')
+            ->orWhere('s.etat = :etat2')
             ->setParameter('etat2', EtatEnumType::CLOTUREE)
             ->orderBy('s.dateHeureDebut', 'DESC')
             ->setMaxResults(6)->getQuery()->getResult();

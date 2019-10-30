@@ -42,10 +42,11 @@ class RegistrationController extends Controller
             $errors = $validator->validate($participantDeserialise);
 
             if (count($errors) > 0) {
+                $messageErreur = '';
                 foreach ($errors as $error){
-                    $tab['messageErreur']["erreurValidation"] = $error;
+                    $messageErreur = $messageErreur . "\n" . $error;
                 }
-                throw new \ErrorException("Erreur lors de la validation !");
+                throw new ErrorException($messageErreur);
             }
 
             $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPlainPassword()));

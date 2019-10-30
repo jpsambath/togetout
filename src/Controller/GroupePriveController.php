@@ -7,6 +7,7 @@ use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -24,6 +25,7 @@ class GroupePriveController extends Controller
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param SerializerInterface $serializer
+     * @return Response
      */
     public function creerGP(Participant $participant, Request $request, ValidatorInterface $validator, SerializerInterface $serializer)
     {
@@ -35,10 +37,11 @@ class GroupePriveController extends Controller
             $errors = $validator->validate($groupePriveDeserialise);
 
             if (count($errors) > 0) {
+                $messageErreur = '';
                 foreach ($errors as $error){
-                    $tab['messageErreur']["erreurValidation"] = $error;
+                    $messageErreur = $messageErreur . "\n" . $error;
                 }
-                throw new \ErrorException("Erreur lors de la validation !");
+                throw new ErrorException($messageErreur);
             }
 
             $participant->addGroupePrivesFondateur($groupePriveDeserialise);

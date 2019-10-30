@@ -2,16 +2,22 @@
 
 namespace App\Controller;
 
+
 use App\Entity\ManagerJSON;
 use App\Entity\Ville;
 use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
@@ -30,27 +36,32 @@ class VilleController extends Controller
      * @param SerializerInterface $serializer
      * @return Response
      */
-    public function ajoutVille(ObjectManager $objectManager, Request $request, ValidatorInterface $validator, SerializerInterface $serializer)
+    public function ajoutVille(ObjectManager $objectManager, Request $request, ValidatorInterface $validator)
     {
         try {
             ManagerJSON::testRecupJSON($request);
 
             $villeRecu = $request->getContent();
+
+            $normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
+            $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
+
             $villeDeserialise = $serializer->deserialize($villeRecu, Ville::class, 'json');
             $errors = $validator->validate($villeDeserialise);
 
             if (count($errors) > 0) {
+                $messageErreur = '';
                 foreach ($errors as $error){
-                    $tab['messageErreur']["erreurValidation"] = $error;
+                    $messageErreur = $messageErreur . "\n" . $error;
                 }
-                throw new ErrorException("Erreur lors de la validation");
+                throw new ErrorException($messageErreur);
             }
 
             $objectManager->persist($villeDeserialise);
             $objectManager->flush();
 
             $tab['statut'] = "ok";
-            $tab['villeDeserialise'] = $villeDeserialise;
+            $tab['messageOk'] = "Ville créée avec succes !";
 
         } catch (\Exception $e) {
             $tab['statut'] = "erreur";

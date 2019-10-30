@@ -12,8 +12,13 @@ use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -34,26 +39,35 @@ class ParticipantController extends Controller
      * @return Response
      */
     public function modifierProfil(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder,
-                                   ObjectManager $objectManager, SerializerInterface $serializer)
+                                   ObjectManager $objectManager)
         {
             try{
                 ManagerJSON::testRecupJSON($request);
 
                 $participantRecu = $request->getContent();
 
-                $participantRecu = $serializer->deserialize($participantRecu, Participant::class, 'json');
-                $errors = $validator->validate($participantRecu);
+                $normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
+                $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
+
+                $participantDeserialise = $serializer->deserialize($participantRecu, Participant::class, 'json');
+                $errors = $validator->validate($participantDeserialise);
 
                 if (count($errors) > 0) {
+                    $messageErreur = '';
                     foreach ($errors as $error){
-                        $tab['messageErreur']["erreurValidation"] = $error;
+                        $messageErreur = $messageErreur . "\n" . $error;
                     }
-                    throw new \ErrorException("Erreur lors de la validation !");
+                    throw new ErrorException($messageErreur);
                 }
 
-                $participantRecu->setPassword($passwordEncoder->encodePassword($participantRecu, $participantRecu->getPlainPassword()));
+                if ($participantDeserialise->getPassword() == null | empty($participantDeserialise->getPassword())){
+                    $user = ManagerJSON::getUser($this->getUser(), $objectManager);
+                    $participantDeserialise->setPassword($user->getPassword());
+                } else {
+                    $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPassword()));
+                }
 
-                $objectManager->persist($participantRecu);
+                $objectManager->persist($participantDeserialise);
                 $objectManager->flush();
 
                 $tab['statut'] = "ok";

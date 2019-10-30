@@ -28,10 +28,14 @@ class DavidController extends Controller
         try {
             $lieuRecu = $request->getContent();
             $lieuDeserialise = $this->get('jms_serializer')->deserialize($lieuRecu, Lieu::class, 'json');
-            $error = $validator->validate($lieuDeserialise);
+            $errors = $validator->validate($lieuDeserialise);
 
-            if (count($error) > 0) {
-                throw new ErrorException("Erreur lors de la validation");
+            if (count($errors) > 0) {
+                $messageErreur = '';
+                foreach ($errors as $error){
+                    $messageErreur = $messageErreur . "\n" . $error;
+                }
+                throw new ErrorException($messageErreur);
             }
 
             $objectManager->persist($lieuDeserialise);

@@ -35,14 +35,14 @@ class Lieu
 
     /**
      * @ORM\Column(type="float")
-     * @Assert\Regex( pattern="/^[0-9]{1,},[0-9]$/")
+     * @Assert\Regex( pattern="/^\d{1,}(?:,\d*)?$/")
      * @Assert\NotBlank()
      */
     private $latitude;
 
     /**
      * @ORM\Column(type="float")
-     * @Assert\Regex( pattern="/[0-9]/")
+     * @Assert\Regex( pattern="/^\d{1,}(?:,\d*)?$/")
      * @Assert\NotBlank()
      */
     private $longitude;

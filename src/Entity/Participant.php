@@ -106,7 +106,7 @@ class Participant implements UserInterface
 
     /**
      * @var
-     * @ORM\Column(type="string", length=180, unique=false)
+     * @ORM\Column(type="string", length=180, nullable=true)
      */
     private $avatar;
 
@@ -306,7 +306,7 @@ class Participant implements UserInterface
     /**
      * @return mixed
      */
-    public function getAvatar()
+    public function getAvatar(): ?string
     {
         return $this->avatar;
     }
@@ -314,7 +314,7 @@ class Participant implements UserInterface
     /**
      * @param mixed $avatar
      */
-    public function setAvatar($avatar): void
+    public function setAvatar(?string $avatar): void
     {
         $this->avatar = $avatar;
     }

@@ -113,66 +113,117 @@ class SortieRepository extends ServiceEntityRepository
 
     public function loadSixProchaineSortiesInscritUtilisateur(Participant $participant, EtatRepository $etatRepository)
     {
+        $qb = $this->createQueryBuilder('s');
 
-        return $this->createQueryBuilder('s')
-            ->Where(':val MEMBER OF s.participants')
-            ->setParameter('val', $participant)
-            ->andWhere('s.etat = :etat')
-            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
-            ->orWhere('s.etat = :etat2')
-            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
+        $condition1 = $qb->expr()->andX(
+            $qb->expr()->isMemberOf(':val', 's.participants')
+        );
+        $qb->setParameter('val', $participant);
+
+        $condition2 = $qb->expr()->orX(
+            $qb->expr()->eq('s.etat', ':etat'),
+            $qb->expr()->eq('s.etat', ':etat2')
+        );
+        $qb->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]));
+
+        $qb->where($qb->expr()->andX($condition1 , $condition2))
             ->orderBy('s.dateHeureDebut', 'DESC')
-            ->setMaxResults(6)->getQuery()->getResult();
+            ->setMaxResults(6);
 
+        return $qb->getQuery()->getResult();
     }
+
 
     public function loadSixProchaineSortiesProposeUtilisateur(Participant $participant,  EtatRepository $etatRepository)
     {
-        return $this->createQueryBuilder('s')
-            ->Where('s.etat = :etat')
-            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::CREE]))
-            ->orWhere('s.etat = :etat2')
+        $qb = $this->createQueryBuilder('s');
+
+        $condition1 = $qb->expr()->andX(
+            $qb->expr()->eq('s.organisateur', ':val')
+        );
+        $qb->setParameter('val', $participant);
+
+        $condition2 = $qb->expr()->orX(
+            $qb->expr()->eq('s.etat', ':etat'),
+            $qb->expr()->eq('s.etat', ':etat2'),
+            $qb->expr()->eq('s.etat', ':etat3')
+        );
+        $qb->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::CREE]))
             ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
-            ->orWhere('s.etat = :etat3')
-            ->setParameter('etat3', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
-            ->andWhere('s.organisateur = :val')
-            ->setParameter('val', $participant)
+            ->setParameter('etat3', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]));
+
+        $qb->where($qb->expr()->andX($condition1 , $condition2))
             ->orderBy('s.dateHeureDebut', 'DESC')
-            ->setMaxResults(6)->getQuery()->getResult();
+            ->setMaxResults(6);
+
+        return $qb->getQuery()->getResult();
     }
+
 
     public function sixProchaineSortie(EtatRepository $etatRepository)
     {
         $now = Carbon::now();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        return $this->createQueryBuilder('s')
-            ->Where('s.dateHeureDebut BETWEEN :from AND :to')
-            ->setParameter('from', $now)
-            ->setParameter('to', $endOfWeek)
-            ->andWhere('s.etat = :etat')
-            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
-            ->orWhere('s.etat = :etat2')
-            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
+        $qb = $this->createQueryBuilder('s');
+
+        $condition1 = $qb->expr()->andX(
+            $qb->expr()->between('s.dateHeureDebut', ':from', ':to')
+        );
+        $qb->setParameter('from', $now)
+            ->setParameter('to', $endOfWeek);
+
+        $condition2 = $qb->expr()->orX(
+            $qb->expr()->eq('s.etat', ':etat'),
+            $qb->expr()->eq('s.etat', ':etat2')
+        );
+        $qb->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]));
+
+        $qb->where($qb->expr()->andX($condition1 , $condition2))
             ->orderBy('s.dateHeureDebut', 'DESC')
-            ->setMaxResults(6)->getQuery()->getResult();
+            ->setMaxResults(6);
+
+        return $qb->getQuery()->getResult();
     }
+
 
     public function sixProchainesSortiesSemaineSuivante(EtatRepository $etatRepository)
     {
         $nextWeekBegin = Carbon::now()->addWeek()->startOfWeek();
         $nextWeekEnd = Carbon::now()->addWeek()->endOfWeek();
 
-        return $this->createQueryBuilder('s')
-            ->Where('s.dateHeureDebut BETWEEN :from AND :to')
-            ->setParameter('from', $nextWeekBegin)
-            ->setParameter('to', $nextWeekEnd)
-            ->andWhere('s.etat = :etat')
-            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
-            ->orWhere('s.etat = :etat2')
-            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
+        $qb = $this->createQueryBuilder('s');
+
+        $condition1 = $qb->expr()->andX(
+            $qb->expr()->between('s.dateHeureDebut', ':from', ':to')
+        );
+        $qb->setParameter('from', $nextWeekBegin)
+            ->setParameter('to', $nextWeekEnd);
+
+        $condition2 = $qb->expr()->orX(
+            $qb->expr()->eq('s.etat', ':etat'),
+            $qb->expr()->eq('s.etat', ':etat2')
+        );
+        $qb->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]));
+
+        $qb->where($qb->expr()->andX($condition1 , $condition2))
             ->orderBy('s.dateHeureDebut', 'DESC')
-            ->setMaxResults(6)->getQuery()->getResult();
+            ->setMaxResults(6);
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+    public function getSortieWhereUserIs(Participant $participant)
+    {
+        return $this->createQueryBuilder('s')
+            ->Where(':val MEMBER OF s.participants')
+            ->setParameter('val', $participant)
+            ->getQuery()
+            ->getResult();
     }
 
 }

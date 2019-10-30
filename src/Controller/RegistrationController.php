@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
+use App\Entity\Site;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,6 +49,9 @@ class RegistrationController extends Controller
             }
 
             $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPlainPassword()));
+
+            $siteRepository = $objectManager->getRepository(Site::class);
+            $participantDeserialise->setSite($siteRepository->find(1));
 
             $objectManager->persist($participantDeserialise);
             $objectManager->flush();

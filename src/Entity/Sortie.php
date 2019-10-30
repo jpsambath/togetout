@@ -254,7 +254,7 @@ class Sortie
                 throw new ErrorException('Ce candidat est déjà inscrit !');
             }
         } else {
-            throw new ErrorException('il n\'est plus possible de s\'inscrire !');
+            throw new ErrorException('il n\'est pas\\plus possible de s\'inscrire !');
         }
         return $this;
     }

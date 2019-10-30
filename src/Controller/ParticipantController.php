@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
+use App\Repository\SortieRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
@@ -74,13 +75,17 @@ class ParticipantController extends Controller
     /**
      * @Route("/consulterProfil/{id}", name="consulterProfil")
      * @param Participant $participant
+     * @param SortieRepository $sortieRepository
      * @return Response
      */
-    public function consulterProfil(Participant $participant)
+    public function consulterProfil(Participant $participant, SortieRepository $sortieRepository)
     {
         try {
+            $sortiesWhereUserIs = $sortieRepository->getSortieWhereUserIs($participant);
+
             $tab['statut'] = "ok";
             $tab['participant'] = $participant;
+            $tab['sesSorties'] = $sortiesWhereUserIs;
 
         } catch (\Exception $e){
                 $tab['statut'] = "erreur";

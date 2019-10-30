@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\DBAL\Types\EtatEnumType;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Entity\Sortie;
@@ -19,7 +20,6 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -186,6 +186,11 @@ class SortieController extends Controller
 
             $etat = $objectManager->merge($sortieDeserialise->getEtat());
             $sortieDeserialise->setEtat($etat);
+
+            if ($sortieDeserialise->getEtat()->getLibelle() == EtatEnumType::OUVERTE){
+                $sortieDeserialise->addParticipant($organisateur[0]);
+            }
+
             $lieu = $objectManager->merge($sortieDeserialise->getLieu());
             $sortieDeserialise->setLieu( $lieu);
 
@@ -271,6 +276,27 @@ class SortieController extends Controller
 
         } finally {
             $tab['action'] = "getSortieInfo";
+        }
+        return ManagerJSON::renvoiJSON($tab);
+    }
+
+    /**
+     * @Route("/getSortie/{id}", name="getSortie")
+     * @param Sortie $sortie
+     * @return Response
+     */
+    public function getSortie(Sortie $sortie)
+    {
+        try{
+            $tab['statut'] = "ok";
+            $tab['sortie'] =  $sortie;
+
+        } catch (Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "getSortie";
         }
         return ManagerJSON::renvoiJSON($tab);
     }

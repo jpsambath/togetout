@@ -19,7 +19,7 @@ class Etat
     private $id;
 
     /**
-     * @var EtatEnum
+     * @var EtatEnumType
      * @ORM\Column(type="EtatEnumType", nullable=false)
      * @DoctrineAssert\Enum(entity="App\DBAL\Types\EtatEnumType")
     */
@@ -31,18 +31,26 @@ class Etat
     }
 
     /**
-     * @return mixed
+     * @param mixed $id
      */
-    public function getLibelle(): ?EtatEnumType
+    public function setId($id): void
+    {
+        $this->id = $id;
+    }
+
+
+    /**
+     * @return EtatEnumType
+     */
+    public function getLibelle(): ?string
     {
         return $this->libelle;
     }
 
     /**
-     * @param mixed $libelle
-     * @return Etat|null
+     * @param string $libelle
      */
-    public function setLibelle(EtatEnumType $libelle): ?self
+    public function setLibelle(string $libelle): void
     {
         $this->libelle = $libelle;
     }

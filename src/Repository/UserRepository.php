@@ -23,14 +23,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         parent::__construct($registry, Participant::class);
     }
 
+
+
     /**
      * @param $value
-     * @return Participant[] Returns an array of User objects
+     * @return Participant|null Returns an array of User objects
      * @throws NonUniqueResultException
      */
 
     /*
-    public function findOneBySomeField($value): ?User
+    public function findParticipant($value): ?Participant
     {
         return $this->createQueryBuilder('u')
             ->andWhere('u.exampleField = :val')
@@ -40,6 +42,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         ;
     }
     */
+
 
     /**
      * Loads the user for the given username.

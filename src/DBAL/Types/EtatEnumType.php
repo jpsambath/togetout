@@ -23,4 +23,5 @@ final class EtatEnumType extends AbstractEnumType
         self::PASSEE => 'Passée',
         self::ANNULEE => 'Annulée'
     ];
+
 }

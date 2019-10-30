@@ -5,13 +5,17 @@ namespace App\Controller;
 use App\Entity\GroupePrive;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
-use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Class GroupePriveController
+ * @package App\Controller
+ * @Route("/api", name="")
+ */
 class GroupePriveController extends Controller
 {
     /**
@@ -28,9 +32,12 @@ class GroupePriveController extends Controller
 
             $groupePriveRecu = $request->getContent();
             $groupePriveDeserialise = $serializer->deserialize($groupePriveRecu, GroupePrive::class, 'json');
-            $error = $validator->validate($groupePriveDeserialise);
+            $errors = $validator->validate($groupePriveDeserialise);
 
-            if (count($error) > 0) {
+            if (count($errors) > 0) {
+                foreach ($errors as $error){
+                    $tab['messageErreur']["erreurValidation"] = $error;
+                }
                 throw new \ErrorException("Erreur lors de la validation !");
             }
 
@@ -46,6 +53,6 @@ class GroupePriveController extends Controller
         } finally {
             $tab['action'] = "creerGP";
         }
-
+        return ManagerJSON::renvoiJSON($tab);
     }
 }

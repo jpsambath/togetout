@@ -4,17 +4,13 @@ namespace App\Controller;
 
 
 use App\Entity\Lieu;
-use App\Entity\ManagerJSON;
-use App\Entity\Participant;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DavidController extends Controller

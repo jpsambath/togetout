@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Cassandra\Date;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,6 +12,7 @@ use App\DBAL\Types\EtatEnumType;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SortieRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Sortie
 {
@@ -39,7 +39,7 @@ class Sortie
     private $dateHeureDebut;
 
     /**
-     * @var DateTime
+     * @var datetime
      * @ORM\Column(type="time")
      * @Assert\NotBlank()
      */
@@ -66,12 +66,12 @@ class Sortie
     private $infosSortie;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\Participant", mappedBy="sorties")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Participant")
      */
     private $participants;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Participant", inversedBy="sortieCreer")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Participant")
      * @ORM\JoinColumn(nullable=false)
      */
     private $organisateur;
@@ -115,6 +115,15 @@ class Sortie
     {
         return $this->id;
     }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
+    }
+
 
     /**
      * @return string
@@ -164,7 +173,6 @@ class Sortie
         $this->duree = $duree;
     }
 
-
     /**
      * @return DateTime
      */
@@ -180,6 +188,7 @@ class Sortie
     {
         $this->dateLimiteInscription = $dateLimiteInscription;
     }
+
 
     /**
      * @return int
@@ -223,7 +232,6 @@ class Sortie
     }
 
 
-
     /**
      * @return Collection|Participant[]
      */
@@ -242,7 +250,6 @@ class Sortie
         if($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE && $this->getParticipants()->count() < $this->getNbInscriptionMax()){
             if (!$this->participants->contains($participant)) {
                 $this->participants[] = $participant;
-                $participant->addSorty($this);
             } else {
                 throw new ErrorException('Ce candidat est déjà inscrit !');
             }
@@ -262,7 +269,6 @@ class Sortie
         if(($this->getEtat()->getLibelle() == EtatEnumType::OUVERTE || ($this->getEtat()->getLibelle() == EtatEnumType::CLOTUREE) && $this->getDateLimiteInscription() > (new \DateTime())) ){
             if ($this->participants->contains($participant)) {
                 $this->participants->removeElement($participant);
-                $participant->removeSorty($this);
             } else {
                 throw new ErrorException('Ce candidat n\'est pas inscrit !');
             }
@@ -342,23 +348,36 @@ class Sortie
      * @param Lieu|null $lieu
      * @return $this
      */
-    public function setLieu(?Lieu $lieu): self
+    public function setLieu(Lieu $lieu): self
     {
+
         $this->lieu = $lieu;
 
         return $this;
     }
 
+    /**
+     * @return GroupePrive|null
+     */
     public function getGroupePrive(): ?GroupePrive
     {
         return $this->groupePrive;
     }
 
+    /**
+     * @param GroupePrive|null $groupePrive
+     * @return $this
+     */
     public function setGroupePrive(?GroupePrive $groupePrive): self
     {
         $this->groupePrive = $groupePrive;
 
         return $this;
+    }
+
+    public function updateEtat(Etat $etat): self
+    {
+        $this->setEtat($etat);
     }
 
 }

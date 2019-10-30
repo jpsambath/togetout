@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * Class RegistrationController
  * @package App\Controller
- * @Route("/api")
+ * @Route("/api", name="")
  */
 class RegistrationController extends Controller
 {
@@ -37,28 +37,23 @@ class RegistrationController extends Controller
 
             $participantRecu = $request->getContent();
 
-            $participantRecu = $serializer->deserialize($participantRecu, Participant::class, 'json');
-            $error = $validator->validate($participantRecu);
+            $participantDeserialise = $serializer->deserialize($participantRecu, Participant::class, 'json');
+            $errors = $validator->validate($participantDeserialise);
 
-            if (count($error) > 0) {
+            if (count($errors) > 0) {
+                foreach ($errors as $error){
+                    $tab['messageErreur']["erreurValidation"] = $error;
+                }
                 throw new \ErrorException("Erreur lors de la validation !");
             }
 
-            $participantRecu->setPassword($passwordEncoder->encodePassword($participantRecu, $participantRecu->getPlainPassword()));
+            $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPlainPassword()));
 
-            $objectManager->persist($participantRecu);
+            $objectManager->persist($participantDeserialise);
             $objectManager->flush();
 
             $tab['statut'] = "ok";
             $tab['messageOk'] = "Inscription réussie";
-
-
-            /*return $guardHandler->authenticateUserAndHandleSuccess(
-                $participantRecu,
-                $request,
-                $authenticator,
-                'main' // firewall name in security.yaml
-            );*/
 
         } catch (\Exception $e) {
             $tab['statut'] = "erreur";
@@ -67,8 +62,7 @@ class RegistrationController extends Controller
         } finally {
             $tab['action'] = "register";
         }
-
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
 }

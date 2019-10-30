@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\DBAL\Types\EtatEnumType;
 use App\Entity\Participant;
 use App\Entity\Sortie;
+use Carbon\Carbon;
 use DateInterval as DateIntervalAlias;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -41,9 +42,9 @@ class SortieRepository extends ServiceEntityRepository
         //Les variables $inscrit, $organisateur, $pasInscrit et $sortiePassee sont des boolean.
 
         $query = $this->createQueryBuilder('s')
-            ->select('*')
-            ->from('sortie','s')
-            ->orWhere('s.site_id = :idSite')
+            //->select('*')
+            //->from('sortie','s')
+            ->Where('s.site_id = :idSite')
             ->setParameter('idSite', $idSite);
 
             //Vérifie si le checkOrganisateur est cochée
@@ -53,7 +54,7 @@ class SortieRepository extends ServiceEntityRepository
             }
 
             //Vérifie si il y a une saisie de nom
-            if (empty($texteRecherche)==false){
+            if (!empty($texteRecherche)){
                 $query->orWhere('s.nom LIKE :texte')
                       ->setParameter('texte','%'.$texteRecherche.'%');
             }
@@ -110,49 +111,66 @@ class SortieRepository extends ServiceEntityRepository
     }
 
 
-    public function loadSixProchaineSortiesInscritUtilisateur(Participant $participant)
+    public function loadSixProchaineSortiesInscritUtilisateur(Participant $participant, EtatRepository $etatRepository)
     {
 
         return $this->createQueryBuilder('s')
-            ->andWhere(':val MEMBER OF s.participants')
+            ->Where(':val MEMBER OF s.participants')
             ->setParameter('val', $participant)
             ->andWhere('s.etat = :etat')
-            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->orWhere('s.etat = :etat2')
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
             ->orderBy('s.dateHeureDebut', 'DESC')
             ->setMaxResults(6)->getQuery()->getResult();
 
     }
 
-    public function loadSixProchaineSortiesProposeUtilisateur(Participant $participant)
+    public function loadSixProchaineSortiesProposeUtilisateur(Participant $participant,  EtatRepository $etatRepository)
     {
         return $this->createQueryBuilder('s')
-            //->andWhere(':val MEMBER OF s.organisateur')
+            ->Where('s.etat = :etat')
+            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::CREE]))
+            ->orWhere('s.etat = :etat2')
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->orWhere('s.etat = :etat3')
+            ->setParameter('etat3', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
             ->andWhere('s.organisateur = :val')
             ->setParameter('val', $participant)
-            ->andWhere('s.etat = :etat')
-            ->setParameter('etat', EtatEnumType::OUVERTE)
-            ->orderBy('s.dateHeureDebut', 'DESC')
-            ->setMaxResults(6)->getQuery()->getResult();
-    }
-    public function sixProchaineSortie()
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.etat = :etat')
-            ->setParameter('etat', EtatEnumType::OUVERTE)
-            ->orWhere('s.etat = :etat2')
-            ->setParameter('etat2', EtatEnumType::CLOTUREE)
             ->orderBy('s.dateHeureDebut', 'DESC')
             ->setMaxResults(6)->getQuery()->getResult();
     }
 
-    public function sixProchainesSortiesSemaineSuivante()
+    public function sixProchaineSortie(EtatRepository $etatRepository)
     {
+        $now = Carbon::now();
+        $endOfWeek = Carbon::now()->endOfWeek();
+
         return $this->createQueryBuilder('s')
-            //->andWhere('s.dateHeureDebut'>= date("d/m/Y")."+ 1 week")
+            ->Where('s.dateHeureDebut BETWEEN :from AND :to')
+            ->setParameter('from', $now)
+            ->setParameter('to', $endOfWeek)
             ->andWhere('s.etat = :etat')
-            ->setParameter('etat', EtatEnumType::OUVERTE)
+            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
             ->orWhere('s.etat = :etat2')
-            ->setParameter('etat2', EtatEnumType::CLOTUREE)
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
+            ->orderBy('s.dateHeureDebut', 'DESC')
+            ->setMaxResults(6)->getQuery()->getResult();
+    }
+
+    public function sixProchainesSortiesSemaineSuivante(EtatRepository $etatRepository)
+    {
+        $nextWeekBegin = Carbon::now()->addWeek()->startOfWeek();
+        $nextWeekEnd = Carbon::now()->addWeek()->endOfWeek();
+
+        return $this->createQueryBuilder('s')
+            ->Where('s.dateHeureDebut BETWEEN :from AND :to')
+            ->setParameter('from', $nextWeekBegin)
+            ->setParameter('to', $nextWeekEnd)
+            ->andWhere('s.etat = :etat')
+            ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::OUVERTE]))
+            ->orWhere('s.etat = :etat2')
+            ->setParameter('etat2', $etatRepository->findBy(["libelle" => EtatEnumType::CLOTUREE]))
             ->orderBy('s.dateHeureDebut', 'DESC')
             ->setMaxResults(6)->getQuery()->getResult();
     }

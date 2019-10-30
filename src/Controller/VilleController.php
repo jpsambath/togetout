@@ -37,9 +37,12 @@ class VilleController extends Controller
 
             $villeRecu = $request->getContent();
             $villeDeserialise = $serializer->deserialize($villeRecu, Ville::class, 'json');
-            $error = $validator->validate($villeDeserialise);
+            $errors = $validator->validate($villeDeserialise);
 
-            if (count($error) > 0) {
+            if (count($errors) > 0) {
+                foreach ($errors as $error){
+                    $tab['messageErreur']["erreurValidation"] = $error;
+                }
                 throw new ErrorException("Erreur lors de la validation");
             }
 
@@ -56,21 +59,17 @@ class VilleController extends Controller
         } finally {
             $tab['action'] = "ajoutVille";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
      * @Route("/getVilles", name="getVilles")
      * @param VilleRepository $repository
-     * @param Request $request
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    public function recuperationVille(VilleRepository $repository, Request $request, SerializerInterface $serializer)
+    public function recuperationVille(VilleRepository $repository)
     {
         try {
-            ManagerJSON::testRecupJSON($request);
-
             $tab['statut'] = "ok";
             $tab['villes'] = $repository->findAll();
 
@@ -81,6 +80,6 @@ class VilleController extends Controller
         } finally {
             $tab['action'] = "recuperationVille";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 }

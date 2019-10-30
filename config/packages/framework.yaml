@@ -12,3 +12,6 @@ framework:
     #fragments: true
     php_errors:
         log: true
+
+    serializer: { enabled: true }
+    property_info: { enabled: true }

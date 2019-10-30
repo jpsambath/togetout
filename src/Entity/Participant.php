@@ -4,9 +4,10 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use phpDocumentor\Reflection\File;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\ORM\Mapping as ORM;use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 use Symfony\Component\Security\Core\User\UserInterface;
 use JMS\Serializer\Annotation as Serializer;
 
@@ -104,23 +105,16 @@ class Participant implements UserInterface
     private $actif;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\Sortie", inversedBy="participants")
-     * @ORM\JoinColumn(nullable=true)
+     * @var
+     * @ORM\Column(type="string", length=180, unique=false)
      */
-    private $sorties;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Sortie", mappedBy="organisateur")
-     * @ORM\JoinColumn(nullable=true)
-     */
-    private $sortieCreer;
+    private $avatar;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Site")
      * @ORM\JoinColumn(nullable=true)
      */
     private $site;
-
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\GroupePrive", mappedBy="membres")
@@ -138,8 +132,6 @@ class Participant implements UserInterface
      */
     public function __construct()
     {
-        $this->sorties = new ArrayCollection();
-        $this->sortieCreer = new ArrayCollection();
         $this->actif = true;
         $this->administrateur = false;
         $this->roles[] = "ROLE_USER";
@@ -311,6 +303,22 @@ class Participant implements UserInterface
         $this->actif = $actif;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getAvatar()
+    {
+        return $this->avatar;
+    }
+
+    /**
+     * @param mixed $avatar
+     */
+    public function setAvatar($avatar): void
+    {
+        $this->avatar = $avatar;
+    }
+
 
     /**
      * @see UserInterface
@@ -329,81 +337,6 @@ class Participant implements UserInterface
         // $this->plainPassword = null;
     }
 
-    /**
-     * @return Collection|Sortie[]
-     */
-    public function getSorties(): Collection
-    {
-        return $this->sorties;
-    }
-
-    /**
-     * @param Sortie $sortie
-     * @return $this
-     */
-    public function addSorty(Sortie $sortie): self
-    {
-        if (!$this->sorties->contains($sortie)) {
-            $this->sorties[] = $sortie;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Sortie $sortie
-     * @return $this
-     */
-    public function removeSorty(Sortie $sortie): self
-    {
-        if ($this->sorties->contains($sortie)) {
-            $this->sorties->removeElement($sortie);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Sortie[]
-     */
-    public function getSortieCreer(): Collection
-    {
-        return $this->sortieCreer;
-    }
-
-    /**
-     * @param Sortie $sortieCreer
-     * @return $this
-     */
-    public function addSortieCreer(Sortie $sortieCreer): self
-    {
-        if (!$this->sortieCreer->contains($sortieCreer)) {
-            $this->sortieCreer[] = $sortieCreer;
-            $sortieCreer->setOrganisateur($this);
-
-            //Inscription automatique à la sortie
-            $this->addSorty($sortieCreer);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Sortie $sortieCreer
-     * @return $this
-     */
-    public function removeSortieCreer(Sortie $sortieCreer): self
-    {
-        if ($this->sortieCreer->contains($sortieCreer)) {
-            $this->sortieCreer->removeElement($sortieCreer);
-            // set the owning side to null (unless already changed)
-            if ($sortieCreer->getOrganisateur() === $this) {
-                $sortieCreer->setOrganisateur(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Site|null
@@ -423,15 +356,6 @@ class Participant implements UserInterface
 
         return $this;
     }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return "Identifiant : ".$this->getId().", Username : ".$this->getUsername().", plainPassword : ".$this->getPlainPassword() ;
-    }
-
 
     /**
      * @return Collection|GroupePrive[]
@@ -509,5 +433,12 @@ class Participant implements UserInterface
     }
     */
 
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return "Identifiant : ".$this->getId().", Username : ".$this->getUsername().", plainPassword : ".$this->getPlainPassword() ;
+    }
 
 }

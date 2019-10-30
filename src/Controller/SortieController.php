@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Entity\Sortie;
+use App\Repository\EtatRepository;
 use App\Repository\SortieRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
@@ -12,7 +13,12 @@ use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -29,16 +35,17 @@ class SortieController extends Controller
     /**
      * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
      * @param Sortie $sortie
-     * @param SerializerInterface $serializer
-     * @param Request $request
+     * @param ObjectManager $objectManager
      * @return Response
      */
-    public function inscriptionSortie(Sortie $sortie, SerializerInterface $serializer, Request $request)
+    public function inscriptionSortie(Sortie $sortie, ObjectManager $objectManager)
     {
         try{
-            ManagerJSON::testRecupJSON($request);
+            $participant = ManagerJSON::getUser($this->getUser(), $objectManager);
+            $sortie->addParticipant($participant[0]);
 
-            $sortie->addParticipant($this->getUser());
+            $objectManager->persist($sortie);
+            $objectManager->flush();
 
             $tab['statut'] = "ok";
             $tab['messageOk'] = "Update successfull";
@@ -50,22 +57,26 @@ class SortieController extends Controller
         } finally {
             $tab['action'] = "inscriptionSortie";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
      * @Route("/desistementSortie/{id}", name="desistementSortie")
      * @param Sortie $sortie
-     * @param SerializerInterface $serializer
      * @param Request $request
+     * @param ObjectManager $objectManager
      * @return Response
      */
-    public function desistementSortie(Sortie $sortie, SerializerInterface $serializer, Request $request)
+    public function desistementSortie(Sortie $sortie, Request $request, ObjectManager $objectManager)
     {
         try{
             ManagerJSON::testRecupJSON($request);
 
-            $sortie->removeParticipant($this->getUser());
+            $participant = ManagerJSON::getUser($this->getUser(), $objectManager);
+            $sortie->removeParticipant($participant[0]);
+
+            $objectManager->persist($sortie);
+            $objectManager->flush();
 
             $tab['statut'] = "ok";
             $tab['messageOk'] = "Update successfull";
@@ -77,17 +88,16 @@ class SortieController extends Controller
         } finally {
             $tab['action'] = "desistementSortie";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
      * @Route("/clotureInscription", name="clotureInscription")
      * @param Sortie $sortie
-     * @param SerializerInterface $serializer
      * @param Request $request
      * @return Response
      */
-    public function clotureInscrition(Sortie $sortie, SerializerInterface $serializer, Request $request)
+    public function clotureInscrition(Sortie $sortie, Request $request)
     {
         try{
             ManagerJSON::testRecupJSON($request);
@@ -106,7 +116,7 @@ class SortieController extends Controller
         } finally {
             $tab['action'] = "clotureInscrition";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
@@ -114,11 +124,10 @@ class SortieController extends Controller
      * @param Sortie $sortieAnnule
      * @param ObjectManager $objectManager
      * @param Participant $participant
-     * @param SerializerInterface $serializer
      * @param Request $request
      * @return Response
      */
-    public function annulationSortie(Sortie $sortieAnnule, ObjectManager $objectManager, Participant $participant, SerializerInterface $serializer, Request $request)
+    public function annulationSortie(Sortie $sortieAnnule, ObjectManager $objectManager, Participant $participant, Request $request)
     {
         try{
             ManagerJSON::testRecupJSON($request);
@@ -141,7 +150,7 @@ class SortieController extends Controller
             $tab['action'] = "annulationSortie";
         }
 
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
@@ -149,23 +158,40 @@ class SortieController extends Controller
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param ObjectManager $objectManager
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    public function creerSortie(Request $request, ValidatorInterface $validator, ObjectManager $objectManager,  SerializerInterface $serializer)
+    public function creerSortie(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
     {
         try {
             ManagerJSON::testRecupJSON($request);
+            $organisateur = ManagerJSON::getUser($this->getUser(), $objectManager);
 
             $sortieRecu = $request->getContent();
-            $sortieRecu =$serializer->deserialize($sortieRecu, Sortie::class, 'json');
-            $error = $validator->validate($sortieRecu);
 
-            if (count($error) > 0) {
+            $normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
+            $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
+
+            $sortieDeserialise =$serializer->deserialize($sortieRecu, Sortie::class, 'json');
+
+            $errors = $validator->validate($sortieDeserialise);
+
+            if (count($errors) > 0) {
+                foreach ($errors as $error){
+                    $tab['messageErreur']["erreurValidation"] = $error;
+                }
                 throw new \ErrorException("Erreur lors de la validation !");
             }
 
-            $objectManager->persist($sortieRecu);
+            $sortieDeserialise->setOrganisateur($organisateur[0]);
+
+            $etat = $objectManager->merge($sortieDeserialise->getEtat());
+            $sortieDeserialise->setEtat($etat);
+            $lieu = $objectManager->merge($sortieDeserialise->getLieu());
+            $sortieDeserialise->setLieu( $lieu);
+
+            $sortieDeserialise->setSite($organisateur[0]->getSite());
+
+            $objectManager->persist($sortieDeserialise);
             $objectManager->flush();
 
             $tab['statut'] = "ok";
@@ -179,17 +205,16 @@ class SortieController extends Controller
             $tab['action'] = "creerSortie";
         }
 
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
     /*------------------------------------ANTOINE--------------------------------------------*/
     /**
      * @Route("/listeSorties", name="listeSorties")
      * @param Request $request
      * @param ObjectManager $objectManager
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    public function listeSorties(Request $request, ObjectManager $objectManager, SerializerInterface $serializer)
+    public function listeSorties(Request $request, ObjectManager $objectManager)
     {
         try {
             ManagerJSON::testRecupJSON($request);
@@ -217,26 +242,26 @@ class SortieController extends Controller
             $tab['action'] = "listeSorties";
         }
 
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
 
     /**
      * @Route("/getSortieInfo", name="getSortieInfo")
      * @param SortieRepository $repository
-     * @param SerializerInterface $serializer
      * @param ObjectManager $objectManager
+     * @param EtatRepository $etatRepository
      * @return Response
      */
-    public function getSortieInfo(SortieRepository $repository, SerializerInterface $serializer, ObjectManager $objectManager)
+    public function getSortieInfo(SortieRepository $repository, ObjectManager $objectManager, EtatRepository $etatRepository)
     {
         try{
-            $participant = ManagerJSON::test($this->getUser(), $objectManager);
+            $participant = ManagerJSON::getUser($this->getUser(), $objectManager);
 
-            $tab['sortiesInscrits'] = $repository->loadSixProchaineSortiesInscritUtilisateur($participant[0]);
-            $tab['sortiesOrganisateurs'] = $repository->loadSixProchaineSortiesProposeUtilisateur($participant[0]);
-            $tab['sortiesSemaineActuelle'] = $repository->sixProchaineSortie();
-            $tab['sortiesSemaineProchaine'] = $repository->sixProchainesSortiesSemaineSuivante();
+            $tab['sortiesInscrits'] = $repository->loadSixProchaineSortiesInscritUtilisateur($participant[0],$etatRepository);
+            $tab['sortiesOrganisateurs'] = $repository->loadSixProchaineSortiesProposeUtilisateur($participant[0],$etatRepository);
+            $tab['sortiesSemaineActuelle'] = $repository->sixProchaineSortie($etatRepository);
+            $tab['sortiesSemaineProchaine'] = $repository->sixProchainesSortiesSemaineSuivante($etatRepository);
 
             $tab['statut'] = "ok";
 
@@ -247,6 +272,6 @@ class SortieController extends Controller
         } finally {
             $tab['action'] = "getSortieInfo";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 }

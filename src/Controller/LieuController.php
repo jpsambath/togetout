@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Lieu;
 use App\Entity\ManagerJSON;
 use App\Repository\LieuRepository;
-use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -37,9 +36,12 @@ class LieuController extends Controller
 
             $lieuRecu = $request->getContent();
             $lieuDeserialise = $serializer->deserialize($lieuRecu, Lieu::class, 'json');
-            $error = $validator->validate($lieuDeserialise);
+            $errors = $validator->validate($lieuDeserialise);
 
-            if (count($error) > 0) {
+            if (count($errors) > 0) {
+                foreach ($errors as $error){
+                    $tab['messageErreur']["erreurValidation"] = $error;
+                }
                 throw new ErrorException("Erreur lors de la validation");
             }
 
@@ -56,21 +58,17 @@ class LieuController extends Controller
         } finally {
             $tab['action'] = "ajoutLieu";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
      * * @Route("/getLieux", name="getLieux")
      * @param LieuRepository $repository
-     * @param Request $request
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    public function recuperationVille(LieuRepository $repository, Request $request, SerializerInterface $serializer)
+    public function recuperationVille(LieuRepository $repository)
     {
         try {
-            ManagerJSON::testRecupJSON($request);
-
             $tab['statut'] = "ok";
             $tab['lieux'] = $repository->findAll();
 
@@ -81,6 +79,6 @@ class LieuController extends Controller
         } finally {
             $tab['action'] = "recuperationVille";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 }

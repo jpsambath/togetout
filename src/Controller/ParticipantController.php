@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * Class ParticipantController
  * @package App\Controller
- * @Route("", name="")
+ * @Route("/api", name="")
  */
 class ParticipantController extends Controller
 {
@@ -41,9 +41,12 @@ class ParticipantController extends Controller
                 $participantRecu = $request->getContent();
 
                 $participantRecu = $serializer->deserialize($participantRecu, Participant::class, 'json');
-                $error = $validator->validate($participantRecu);
+                $errors = $validator->validate($participantRecu);
 
-                if (count($error) > 0) {
+                if (count($errors) > 0) {
+                    foreach ($errors as $error){
+                        $tab['messageErreur']["erreurValidation"] = $error;
+                    }
                     throw new \ErrorException("Erreur lors de la validation !");
                 }
 
@@ -63,7 +66,7 @@ class ParticipantController extends Controller
                 $tab['action'] = "modifierProfil";
             }
 
-            return ManagerJSON::renvoiJSON($tab, $serializer);
+            return ManagerJSON::renvoiJSON($tab);
         }
 
 
@@ -71,11 +74,9 @@ class ParticipantController extends Controller
     /**
      * @Route("/consulterProfil/{id}", name="consulterProfil")
      * @param Participant $participant
-     * @param SerializerInterface $serializer
-     * @param Request $request
      * @return Response
      */
-    public function consulterProfil(Participant $participant, SerializerInterface $serializer, Request $request)
+    public function consulterProfil(Participant $participant)
     {
         try {
             $tab['statut'] = "ok";
@@ -89,7 +90,7 @@ class ParticipantController extends Controller
             $tab['action'] = "consulterProfil";
         }
 
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
@@ -128,7 +129,7 @@ class ParticipantController extends Controller
         } finally {
             $tab['action'] = "supprimerUtilisateur";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /**
@@ -165,7 +166,7 @@ class ParticipantController extends Controller
         } finally {
             $tab['action'] = "inscrireManuellementUtilisateur";
         }
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 
     /*-----------------------------------ANTOINE----------------------------------*/
@@ -173,10 +174,9 @@ class ParticipantController extends Controller
      * @Route("/sendMailRecuperationMDP", name="sendMailRecuperationMDP")
      * @param Swift_Mailer $mailer
      * @param Request $request
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    private function sendMailRecuperationMDP(Swift_Mailer $mailer, Request $request, SerializerInterface $serializer)
+    private function sendMailRecuperationMDP(Swift_Mailer $mailer, Request $request)
     {
         try {
             ManagerJSON::testRecupJSON($request);
@@ -202,6 +202,6 @@ class ParticipantController extends Controller
             $tab['action'] = "sendMailRecuperationMDP";
         }
 
-        return ManagerJSON::renvoiJSON($tab, $serializer);
+        return ManagerJSON::renvoiJSON($tab);
     }
 }

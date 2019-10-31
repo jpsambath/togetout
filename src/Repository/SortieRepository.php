@@ -25,89 +25,77 @@ class SortieRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $idSite
-     * @param $organisateur
-     * @param $inscrit
-     * @param $pasInscrit
-     * @param $sortiePassee
-     * @param $texteRecherche
-     * @param $idParticipant
+     * @param string $ville
+     * @param bool $cbxOrganisateur
+     * @param bool $cbxInscrit
+     * @param bool $cbxNonInscrit
+     * @param bool $cbxPassees
+     * @param string $recherche
      * @param $dateDebut
      * @param $dateFin
+     * @param $heureDebut
+     * @param $heureFin
+     * @param $user
+     * @param VilleRepository $villeRepository
+     * @param LieuRepository $lieuRepository
+     * @param EtatRepository $etatRepository
      * @return Sortie[] Returns an array of Sortie objects
-     * @throws Exception
      */
-    public function findSortie($idSite,$organisateur,$inscrit,$pasInscrit,$sortiePassee,$texteRecherche,$idParticipant,$dateDebut,$dateFin)
+    public function findSortie(string $ville, bool $cbxOrganisateur, bool $cbxInscrit, bool $cbxNonInscrit, bool $cbxPassees,
+                               string $recherche, $dateDebut, $dateFin, $heureDebut, $heureFin,
+                               $user, VilleRepository $villeRepository, LieuRepository $lieuRepository , EtatRepository $etatRepository)
     {
-        //Les variables $inscrit, $organisateur, $pasInscrit et $sortiePassee sont des boolean.
+        $dateTimeDebut = $dateDebut . " " . $heureDebut;
+        $dateTimeFin = $dateFin . " " . $heureFin;
 
+        //Filtre du nom de la ville
         $query = $this->createQueryBuilder('s')
-            //->select('*')
-            //->from('sortie','s')
-            ->Where('s.site_id = :idSite')
-            ->setParameter('idSite', $idSite);
+            ->Where('s.lieu MEMBER OF :lieu')
+            ->setParameter('lieu', $lieuRepository->findBy(["ville" => $villeRepository->findBy(["nom" => $ville])]));
 
-            //Vérifie si le checkOrganisateur est cochée
-            if ($organisateur){
-                $query->orWhere('s.organisateur_id = :organisateur')
-                    ->setParameter('organisateur', $idParticipant);
-            }
-
-            //Vérifie si il y a une saisie de nom
-            if (!empty($texteRecherche)){
-                $query->orWhere('s.nom LIKE :texte')
-                      ->setParameter('texte','%'.$texteRecherche.'%');
-            }
-
-            //Vérifie si le checkFiltreSortiePasse est cochée
-            if ($sortiePassee) {
-                //Sélectionne les sortie passées
-                $date= New \DateTime();
-                $query->orWhere('s.etat = :etat')
-                      ->setParameter('etat', 'Passée')
-                      ->andWhere('s.dateHeureDebut > :dateDuJourOneMonth')
-                      ->setParameter('dateDuJourOneMonth', $date->sub(new DateIntervalAlias('P1M')));
-            }else{
-                //Sélectionne toutes les sorties sauf les sorties passées
-                $query->orWhere('s.etat <> :etat')
-                    ->setParameter('etat', 'Passée');
-            }
-
-            //Vérifie si il y a un intervalle de date de saisie
-            if(empty($dateDebut)==false and empty($dateFin)==false){
-                $query->orWhere('s.dateHeureDebut BETWEEN :debut AND :fin')
-                    ->setParameter('debut', $dateDebut)
-                    ->setParameter('fin', $dateFin);
-            }
-
-            $liste = $query->getQuery()
-            ->getResult();
-
-        $listeSortie[]="";
-        if ($inscrit ==false and $pasInscrit ==false){
-            foreach ($liste as $sortie){
-                    $listeSortie[]=$sortie;
-                }
-        }else{
-            //Vérifie si le checkFiltreInscrit est cochée
-            if ($inscrit){
-                foreach ($liste as $sortie){
-                    if($sortie->getInscrit == $idParticipant){
-                        $listeSortie[]=$sortie;
-                    }
-                }
-            }
-
-            //Vérifie si le checkFiltrePasInscrit est cochée
-            if ($pasInscrit){
-                foreach ($liste as $sortie){
-                    if($sortie->getInscrit == $idParticipant){
-                        $listeSortie[]=$sortie;
-                    }
-                }
-            }
+        //Vérifie si le checkOrganisateur est cochée
+        if ($cbxOrganisateur){
+            $query->andWhere('s.organisateur = :organisateur')
+                ->setParameter('organisateur', $user);
         }
-            return $listeSortie;
+
+        //Filtre du nom de la sortie
+        if (!empty($recherche)){
+            $query->andWhere('s.nom LIKE :recherche')
+                  ->setParameter('recherche', '%'.$recherche.'%');
+        }
+
+        //Vérifie si le checkFiltreSortiePasse est cochée
+        if ($cbxPassees) {
+            //Sélectionne les sortie passées
+            $query->andWhere('s.etat = :etat')
+                ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::PASSEE]));
+        }else{
+            //Sélectionne toutes les sorties sauf les sorties passées
+            $query->andWhere('s.etat <> :etat')
+                ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::PASSEE]));
+        }
+
+        //Vérifie si il y a un intervalle de date de saisie
+        if((!empty(trim($dateTimeDebut))) && (!empty(trim($dateTimeFin)))){
+            $query->andWhere('s.dateHeureDebut BETWEEN :debut AND :fin')
+                ->setParameter('debut', $dateTimeDebut)
+                ->setParameter('fin', $dateTimeFin);
+        }
+
+        //Vérifie si le checkFiltreInscrit est cochée
+        if ($cbxInscrit){
+            $query->andWhere(':user MEMBER OF s.participants')
+                ->setParameter('user', $user);
+        }
+
+        //Vérifie si le checkFiltreNonInscrit est cochée
+        if ($cbxInscrit){
+            $query->andWhere(':user NOT MEMBER OF s.participants')
+                ->setParameter('user', $user);
+        }
+
+        return $query->getQuery()->getResult();
     }
 
 
@@ -224,6 +212,32 @@ class SortieRepository extends ServiceEntityRepository
             ->setParameter('val', $participant)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findAllSortie(Participant $participant, EtatRepository $etatRepository)
+    {
+        {
+            $qb = $this->createQueryBuilder('s');
+
+            $condition1 = $qb->expr()->andX(
+                $qb->expr()->neq('s.etat', ':etat'),
+                $qb->expr()->neq('s.organisateur', ':val')
+            );
+            $qb->setParameter('val', $participant)
+                ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::CREE]));
+
+            $condition2 = $qb->expr()->andX(
+                $qb->expr()->neq('s.etat', ':etat'),
+                $qb->expr()->eq('s.organisateur', ':val')
+            );
+            $qb->setParameter('val', $participant)
+                ->setParameter('etat', $etatRepository->findBy(["libelle" => EtatEnumType::CREE]));
+
+            $qb->where($qb->expr()->orX($condition1, $condition2))
+                ->orderBy('s.dateHeureDebut', 'DESC');
+
+            return $qb->getQuery()->getResult();
+        }
     }
 
 }

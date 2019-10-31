@@ -7,7 +7,9 @@ use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Entity\Sortie;
 use App\Repository\EtatRepository;
+use App\Repository\LieuRepository;
 use App\Repository\SortieRepository;
+use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
@@ -29,8 +31,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class SortieController extends Controller
 {
-
-    /*-------------------------------------DAVID----------------------------------------------*/
 
     /**
      * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
@@ -213,39 +213,49 @@ class SortieController extends Controller
 
         return ManagerJSON::renvoiJSON($tab);
     }
-    /*------------------------------------ANTOINE--------------------------------------------*/
+
+
     /**
-     * @Route("/listeSorties", name="listeSorties")
+     * @Route("/getSearchSorties", name="getSearchSorties")
      * @param Request $request
      * @param ObjectManager $objectManager
+     * @param VilleRepository $villeRepository
+     * @param LieuRepository $lieuRepository
+     * @param EtatRepository $etatRepository
      * @return Response
      */
-    public function listeSorties(Request $request, ObjectManager $objectManager)
+    public function getSearchSorties(Request $request, ObjectManager $objectManager, VilleRepository $villeRepository, LieuRepository $lieuRepository, EtatRepository $etatRepository)
     {
         try {
             ManagerJSON::testRecupJSON($request);
+            $user = ManagerJSON::getUser($this->getUser(), $objectManager);
 
-            $listeSortie = $objectManager
+            $searchSorties = $objectManager
                 ->getRepository(Sortie::class)
-                ->findSortie(json_decode($request->get("selectSite")), //Id du site selectionné
-                    json_decode($request->get("checkFiltreOrganisateur")), //Boolean
-                    json_decode($request->get("checkFiltreInscrit")), //Boolean
-                    json_decode($request->get("checkFiltrePasInscrit")), //Boolean
-                    json_decode($request->get("checkFiltreSortiePasse")), //Boolean
-                    json_decode($request->get("filtreSaisieNom")), //Valeur de l'input
-                    json_decode($request->get("idParticipant")), //Id de l'utilisateur connecté
-                    json_decode($request->get("filtreDateDebut")), //valeur de l'input de type date du premier intervalle
-                    json_decode($request->get("filtreDateFin"))); //valeur de l'input de type date du deuxième intervalle
+                ->findSortie(json_decode($request->get("ville")), //Ville selectionné
+                    json_decode($request->get("cbxOrganisateur")), //Boolean
+                    json_decode($request->get("cbxInscrit")), //Boolean
+                    json_decode($request->get("cbxNonInscrit")), //Boolean
+                    json_decode($request->get("cbxPassees")), //Boolean
+                    json_decode($request->get("recherche")), //Valeur de l'input (nom de la sortie)
+                    json_decode($request->get("dateDebut")), //valeur de l'input de type date du premier intervalle
+                    json_decode($request->get("dateFin")),
+                    json_decode($request->get("heureDebut")),
+                    json_decode($request->get("heureFin")),
+                    $user,
+                    $villeRepository,
+                    $lieuRepository,
+                    $etatRepository); //valeur de l'input de type date du deuxième intervalle
 
             $tab['statut'] = "ok";
-            $tab['listeSortie'] = $listeSortie;
+            $tab['searchSorties'] = $searchSorties;
 
         } catch (Exception $e){
             $tab['statut'] = "erreur";
             $tab['messageErreur'] = $e->getMessage();
 
         } finally {
-            $tab['action'] = "listeSorties";
+            $tab['action'] = "getSearchSorties";
         }
 
         return ManagerJSON::renvoiJSON($tab);
@@ -299,6 +309,94 @@ class SortieController extends Controller
         } finally {
             $tab['action'] = "getSortie";
         }
+        return ManagerJSON::renvoiJSON($tab);
+    }
+
+    /**
+     * @Route("/getAllSortie", name="getAllSortie")
+     * @param SortieRepository $sortieRepository
+     * @param EtatRepository $etatRepository
+     * @param ObjectManager $objectManager
+     * @return Response
+     */
+    public function getAllSortie(SortieRepository $sortieRepository, EtatRepository $etatRepository, ObjectManager $objectManager)
+    {
+        try{
+            $participant = ManagerJSON::getUser($this->getUser(), $objectManager);
+
+            $allSortie = $sortieRepository->findAllSortie($participant[0], $etatRepository);
+
+            $tab['statut'] = "ok";
+            $tab['allSortie'] =  $allSortie;
+
+        } catch (Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "getAllSortie";
+        }
+        return ManagerJSON::renvoiJSON($tab);
+    }
+
+    /**
+     * @Route("/modifierProfil", name="modifierProfil")
+     * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param ObjectManager $objectManager
+     * @return Response
+     */
+    public function modifierSortie(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
+    {
+        try{
+            ManagerJSON::testRecupJSON($request);
+
+            $sortieRecu = $request->getContent();
+
+            $normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
+            $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
+
+            $sortieDeserialise = $serializer->deserialize($sortieRecu, Participant::class, 'json');
+
+            $sortieDeserialise = $objectManager->merge($sortieDeserialise);
+
+            $errors = $validator->validate($sortieDeserialise);
+
+            if (count($errors) > 0) {
+                $messageErreur = '';
+                foreach ($errors as $error){
+                    $messageErreur = $messageErreur . "\n" . $error;
+                }
+                throw new ErrorException($messageErreur);
+            }
+
+            $participant = $objectManager->merge($sortieDeserialise->getParticipants());
+            $sortieDeserialise->setParticipants($participant);
+            $organisateur = $objectManager->merge($sortieDeserialise->getOrganisateur());
+            $sortieDeserialise->setOrganisateur($organisateur);
+            $etat = $objectManager->merge($sortieDeserialise->getEtat());
+            $sortieDeserialise->setEtat($etat);
+            $site = $objectManager->merge($sortieDeserialise->getSite());
+            $sortieDeserialise->setSite($site);
+            $lieu = $objectManager->merge($sortieDeserialise->getLieu());
+            $sortieDeserialise->setLieu($lieu);
+            $groupesPrive = $objectManager->merge($sortieDeserialise->getGroupesPrive());
+            $sortieDeserialise->setGroupesPrive($groupesPrive);
+
+            $objectManager->persist($sortieDeserialise);
+            $objectManager->flush();
+
+            $tab['statut'] = "ok";
+            $tab['messageOk'] = "Update successfull";
+
+        } catch (\Exception $e) {
+            $tab['statut'] = "erreur";
+            $tab['messageErreur'] = $e->getMessage();
+
+        } finally {
+            $tab['action'] = "modifierSortie";
+        }
+
         return ManagerJSON::renvoiJSON($tab);
     }
 }

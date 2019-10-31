@@ -35,7 +35,6 @@ class ParticipantController extends Controller
      * @param ValidatorInterface $validator
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @param ObjectManager $objectManager
-     * @param SerializerInterface $serializer
      * @return Response
      */
     public function modifierProfil(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder,
@@ -50,6 +49,17 @@ class ParticipantController extends Controller
                 $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
 
                 $participantDeserialise = $serializer->deserialize($participantRecu, Participant::class, 'json');
+
+                if ($participantDeserialise->getPlainPassword() == null | empty($participantDeserialise->getPlainPassword())){
+                    $user = ManagerJSON::getUser($this->getUser(), $objectManager);
+                    $participantDeserialise->setPlainPassword($user[0]->getPassword());
+                    $participantDeserialise->setPassword($user[0]->getPassword());
+                } else {
+                    $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPlainPassword()));
+                }
+
+                $participantDeserialise = $objectManager->merge($participantDeserialise);
+
                 $errors = $validator->validate($participantDeserialise);
 
                 if (count($errors) > 0) {
@@ -60,12 +70,8 @@ class ParticipantController extends Controller
                     throw new ErrorException($messageErreur);
                 }
 
-                if ($participantDeserialise->getPassword() == null | empty($participantDeserialise->getPassword())){
-                    $user = ManagerJSON::getUser($this->getUser(), $objectManager);
-                    $participantDeserialise->setPassword($user->getPassword());
-                } else {
-                    $participantDeserialise->setPassword($passwordEncoder->encodePassword($participantDeserialise, $participantDeserialise->getPassword()));
-                }
+                $site = $objectManager->merge($participantDeserialise->getSite());
+                $participantDeserialise->setSite($site);
 
                 $objectManager->persist($participantDeserialise);
                 $objectManager->flush();
@@ -131,7 +137,15 @@ class ParticipantController extends Controller
 
             $listeIdRecue = $request->getContent();
             $listeIdDeserialise =$serializer->deserialize($listeIdRecue, Participant::class, 'json');
-            $error = $validator->validate($listeIdDeserialise);
+            $errors = $validator->validate($listeIdDeserialise);
+
+            if (count($errors) > 0) {
+                $messageErreur = '';
+                foreach ($errors as $error){
+                    $messageErreur = $messageErreur . "\n" . $error;
+                }
+                throw new ErrorException($messageErreur);
+            }
 
             foreach ($listeIdDeserialise as $participant) {
                 $participant->setActif(false);
@@ -170,7 +184,15 @@ class ParticipantController extends Controller
 
             $utilisateurRecue = $request->getContent();
             $utilisateurDeserialise = $serializer->deserialize($utilisateurRecue, 'App\Entity\Participant', 'json');
-            $error = $validator->validate($utilisateurDeserialise);
+            $errors = $validator->validate($utilisateurDeserialise);
+
+            if (count($errors) > 0) {
+                $messageErreur = '';
+                foreach ($errors as $error){
+                    $messageErreur = $messageErreur . "\n" . $error;
+                }
+                throw new ErrorException($messageErreur);
+            }
 
             $objectManager->persist($utilisateurDeserialise);
             $objectManager->flush();

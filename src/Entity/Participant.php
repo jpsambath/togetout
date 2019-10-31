@@ -149,6 +149,14 @@ class Participant implements UserInterface
     }
 
     /**
+     * @param mixed $id
+     */
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @return string
      */
     public function getNom(): string
@@ -216,7 +224,7 @@ class Participant implements UserInterface
     /**
      * @param string $password
      */
-    public function setPassword(string $password): void
+    public function setPassword(?string $password): void
     {
         $this->password = $password;
     }

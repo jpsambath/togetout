@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class GroupePriveController extends Controller
 {
     /**
-     * @Route("/creerGP/{id}", name="creerGP")
+     * @Route("/creerGP/{id}", name="creerGP", requirements={"id": "\d+"})
      * @param Participant $participant
      * @param Request $request
      * @param ValidatorInterface $validator

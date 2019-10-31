@@ -50,7 +50,7 @@ class SortieRepository extends ServiceEntityRepository
 
         //Filtre du nom de la ville
         $query = $this->createQueryBuilder('s')
-            ->Where('s.lieu MEMBER OF :lieu')
+            ->Where(':lieu MEMBER OF s.lieu')
             ->setParameter('lieu', $lieuRepository->findBy(["ville" => $villeRepository->findBy(["nom" => $ville])]));
 
         //Vérifie si le checkOrganisateur est cochée
@@ -90,13 +90,14 @@ class SortieRepository extends ServiceEntityRepository
         }
 
         //Vérifie si le checkFiltreNonInscrit est cochée
-        if ($cbxInscrit){
+        if ($cbxNonInscrit){
             $query->andWhere(':user NOT MEMBER OF s.participants')
                 ->setParameter('user', $user);
         }
 
         return $query->getQuery()->getResult();
     }
+
 
 
     public function loadSixProchaineSortiesInscritUtilisateur(Participant $participant, EtatRepository $etatRepository)
@@ -213,6 +214,7 @@ class SortieRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
 
     public function findAllSortie(Participant $participant, EtatRepository $etatRepository)
     {

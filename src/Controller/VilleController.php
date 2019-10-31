@@ -33,7 +33,6 @@ class VilleController extends Controller
      * @param ObjectManager $objectManager
      * @param Request $request
      * @param ValidatorInterface $validator
-     * @param SerializerInterface $serializer
      * @return Response
      */
     public function ajoutVille(ObjectManager $objectManager, Request $request, ValidatorInterface $validator)

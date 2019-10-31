@@ -13,6 +13,7 @@ use App\Repository\VilleRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,7 +34,7 @@ class SortieController extends Controller
 {
 
     /**
-     * @Route("/inscriptionSortie/{id}", name="inscriptionSortie")
+     * @Route("/inscriptionSortie/{id}", name="inscriptionSortie", requirements={"id": "\d+"})
      * @param Sortie $sortie
      * @param ObjectManager $objectManager
      * @return Response
@@ -61,7 +62,7 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/desistementSortie/{id}", name="desistementSortie")
+     * @Route("/desistementSortie/{id}", name="desistementSortie", requirements={"id": "\d+"})
      * @param Sortie $sortie
      * @param Request $request
      * @param ObjectManager $objectManager
@@ -120,7 +121,7 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/annulerSorite/{id}", name="annulertSortie")
+     * @Route("/annulerSorite/{id}", name="annulertSortie", requirements={"id": "\d+"})
      * @param Sortie $sortieAnnule
      * @param ObjectManager $objectManager
      * @param Participant $participant
@@ -228,24 +229,25 @@ class SortieController extends Controller
     {
         try {
             ManagerJSON::testRecupJSON($request);
+            $data = json_decode($request->getContent(), true);
             $user = ManagerJSON::getUser($this->getUser(), $objectManager);
 
             $searchSorties = $objectManager
                 ->getRepository(Sortie::class)
-                ->findSortie(json_decode($request->get("ville")), //Ville selectionné
-                    json_decode($request->get("cbxOrganisateur")), //Boolean
-                    json_decode($request->get("cbxInscrit")), //Boolean
-                    json_decode($request->get("cbxNonInscrit")), //Boolean
-                    json_decode($request->get("cbxPassees")), //Boolean
-                    json_decode($request->get("recherche")), //Valeur de l'input (nom de la sortie)
-                    json_decode($request->get("dateDebut")), //valeur de l'input de type date du premier intervalle
-                    json_decode($request->get("dateFin")),
-                    json_decode($request->get("heureDebut")),
-                    json_decode($request->get("heureFin")),
+                ->findSortie($data["ville"], //Ville selectionné
+                    $data["cbxOrganisateur"], //Boolean
+                    $data["cbxInscrit"], //Boolean
+                    $data["cbxNonInscrit"], //Boolean
+                    $data["cbxPassees"], //Boolean
+                    $data["recherche"], //Valeur de l'input (nom de la sortie)
+                    $data["dateDebut"], //valeur de l'input de type date du premier intervalle
+                    $data["dateFin"], //valeur de l'input de type date du deuxième intervalle
+                    $data["heureDebut"],
+                    $data["heureFin"],
                     $user,
                     $villeRepository,
                     $lieuRepository,
-                    $etatRepository); //valeur de l'input de type date du deuxième intervalle
+                    $etatRepository);
 
             $tab['statut'] = "ok";
             $tab['searchSorties'] = $searchSorties;
@@ -292,7 +294,7 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/getSortie/{id}", name="getSortie")
+     * @Route("/getSortie/{id}", name="getSortie", requirements={"id": "\d+"})
      * @param Sortie $sortie
      * @return Response
      */
@@ -340,23 +342,23 @@ class SortieController extends Controller
     }
 
     /**
-     * @Route("/modifierProfil", name="modifierProfil")
+     * @Route("/modifierSortie", name="modifierSortie")
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param ObjectManager $objectManager
      * @return Response
      */
-    public function modifierSortie(Request $request, ValidatorInterface $validator, ObjectManager $objectManager)
+    public function modifierSortie(Request $request, ValidatorInterface $validator, ObjectManager $objectManager, SerializerInterface $serializer)
     {
         try{
             ManagerJSON::testRecupJSON($request);
 
             $sortieRecu = $request->getContent();
 
-            $normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
-            $serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
+            //$normalizer = new ObjectNormalizer(null, null, null, new ReflectionExtractor());
+            //$serializer = new Serializer([new DateTimeNormalizer(), $normalizer], [new JsonEncoder()]);
 
-            $sortieDeserialise = $serializer->deserialize($sortieRecu, Participant::class, 'json');
+            $sortieDeserialise = $serializer->deserialize($sortieRecu, Sortie::class, 'json');
 
             $sortieDeserialise = $objectManager->merge($sortieDeserialise);
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ManagerJSON;
 use App\Entity\Participant;
 use App\Repository\SortieRepository;
+use App\Repository\UserRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use ErrorException;
 use Exception;
@@ -29,6 +30,21 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class ParticipantController extends Controller
 {
+    /**
+     * @Route("/getUserInfo")
+     * @param UserRepository $repository
+     * @return Response
+     */
+    public function test(UserRepository $repository)
+    {
+        $user = $repository->findBy(["username" => $this->getUser()->getUsername()]);
+        $tab["participant"] = $user;
+        $tab['action'] = 'test';
+
+        return ManagerJSON::renvoiJSON($tab);
+    }
+
+
     /**
      * @Route("/modifierProfil", name="modifierProfil")
      * @param Request $request
@@ -93,7 +109,7 @@ class ParticipantController extends Controller
 
     /*----------------------------------DAVID-------------------------------------*/
     /**
-     * @Route("/consulterProfil/{id}", name="consulterProfil")
+     * @Route("/consulterProfil/{id}", name="consulterProfil", requirements={"id": "\d+"})
      * @param Participant $participant
      * @param SortieRepository $sortieRepository
      * @return Response
